@@ -7,7 +7,10 @@ Link to install Node JS - https://nodejs.org/en/download/
 
 In the project directory, you can run:
 ### `npm install`
+
 This will install all the node modules.
+
+## Running the application
 
 ### `npm start`
 
