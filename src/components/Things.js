@@ -6,7 +6,7 @@ const Things = () => {
 
 	const getThings = () => {
 		axios
-			.get('http://localhost:5000/getthings/')
+			.get('http://54.87.4.154:5000/getthings/')
 			.then((res) => {
 				console.log(res.data);
 				setThings([...res.data]);

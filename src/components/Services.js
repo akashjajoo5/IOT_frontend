@@ -6,7 +6,7 @@ const Services = () => {
 
 	const getServices = () => {
 		axios
-			.get('http://localhost:5000/getservices/')
+			.get('http://54.87.4.154:5000/getservices/')
 			.then((res) => {
 				console.log(res.data);
 				setServices([...res.data]);
@@ -41,7 +41,12 @@ const Services = () => {
 			<></>
 		);
 
-	return <div className="ui relaxed divided list">{renderedServices}</div>;
+	return (
+		<div>
+			<button onClick={getServices}>Get New Services</button>
+			<div className="ui relaxed divided list">{renderedServices}</div>
+		</div>
+	);
 };
 
 export default Services;
