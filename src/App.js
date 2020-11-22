@@ -7,6 +7,8 @@ import Relationships from './components/Relationships';
 import Recipe from './components/Recipe';
 import Apps from './components/Apps';
 import AppManager from './components/AppManager';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import React from "react";
 
 function App() {
 	return (

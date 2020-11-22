@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 import Draggable from 'react-draggable';
+import { Container, Row, Col} from "react-bootstrap";
 
 function getWindowDimensions() {
 	const { innerWidth: width, innerHeight: height } = window;
@@ -14,10 +15,10 @@ function getWindowDimensions() {
 const Recipe = () => {
 	const [services, setServices] = useState([]);
 	const [relationships, setRelationships] = useState([]);
-	const [deltaXyPos, setDeltaXyPos] = useState({x: 0, y: 0 });
-	const [deltaXyPosR, setDeltaXyPosR] = useState({x: 0, y: 0 });
-	const [dragRef, setDragRef] = useState(React.createRef());
+	const [servicePositions, setServicePositions] = useState([]);
+	const [relationshipPositions, setRelationshipPositions] = useState([]);
 	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
+	const nodeRef = React.useRef(null);
 
 	const getServices = () => {
 		axios
@@ -57,86 +58,126 @@ const Recipe = () => {
 		return () => window.removeEventListener('resize', handleResize);
 	}, []);
 
+	//UseEffect for initializing the Service positions array
+	useEffect(() => {
+		//clear all positions when services change and
+		setServicePositions([]);
+		//then set them all back to zero
+		for(let k = 0; k < services.length; k++){
+			console.log("service length is " + services.length);
+			setServicePositions(servicePositions => [...servicePositions, {"x": 0, "y": 0} ]);
+		}
+	}, [services]);
+
+	//UseEffect for initializing the relationships positions array
+	useEffect(() => {
+		//clear all positions when services change and
+		setRelationshipPositions([]);
+		//then set them all back to zero
+		for(let k = 0; k < relationships.length; k++){
+			console.log("relationship length is " + relationships.length);
+			setRelationshipPositions(relationshipPositions => [...relationshipPositions, {"x": 0, "y": 0} ]);
+		}
+	}, [relationships]);
+
 	const handleDrag = (e,d) => {
-		const {x,y} = deltaXyPos;
-		console.log(dragRef);
+		/*const {x,y} = deltaXyPos;
 
 		setDeltaXyPos({
 			x: x+d.deltaX,
-			y: y +d.deltaY,
-
-		});
-
-	};
-
-	const handleDragR = (e,c) => {
-		const {x,y} = deltaXyPosR;
-		console.log(dragRef);
-
-		setDeltaXyPosR({
-			x: x+c.deltaX,
-			y: y +c.deltaY,
-
-		});
+			y: y +d.deltaY
+		});		*/
 
 	};
 
+	const handleStopRelationships = (dragEvent, dragData) => {
+		console.log(dragEvent.target.id); //THIS CONTAINS THE ELEMENT INDEX THAT WAS DRAGGED
+		let tempPosition = [...relationshipPositions];
+
+		//NOTE: this has weird behavior with grid columns and does not work fully with them
+		//NOTE dragEvent holds data about x and y positions off the whole screen while dragData holds x and y info relative to individual element
+		tempPosition[dragEvent.target.id] = {"x":dragData.x , "y":dragData.y  };
+
+		setRelationshipPositions(tempPosition);
+	};
+
+	const handleStopServices = (dragEvent, dragData) => {
+		console.log(dragEvent.target.id); //THIS CONTAINS THE ELEMENT INDEX THAT WAS DRAGGED
+		console.log(dragEvent);
+		console.log(dragData);
+
+		let tempPosition = [...servicePositions];
+
+		//NOTE: this has weird behavior with grid columns and does not work fully with them
+		//NOTE dragEvent holds data about x and y positions off the whole screen while dragData holds x and y info relative to individual element
+		if(dragEvent.x > 500 || dragEvent.y < 200){
+			tempPosition[dragEvent.target.id] = {"x":0, "y":0 }
+		}
+		else{
+			tempPosition[dragEvent.target.id] = {"x":dragData.x , "y":dragData.y  }
+		}
+
+		setServicePositions(tempPosition);
+	};
 
 
 	const renderedRelationships =
 	relationships.length > 0 ? (
-		relationships.map((r) => {
+		relationships.map((r, index) => {
 			return (
 			<Draggable
-			ref={dragRef}
-			onDrag={handleDragR}
+			position={relationshipPositions[index]}
+			nodeRef={nodeRef}
+			onStop={handleStopRelationships}
+			onDrag={handleDrag}
 			bounds="body">
-
-			<div className="drag-wrapperR" >
-			  <p>{r.name}</p>
-
+			<div id={index} className="drag-wrapperR" ref={nodeRef}>
+			  <p id={index}>{r.name}</p>
 			</div>
-
 		  </Draggable>
-			);
+			);//MUST SET ID AS INDEX ON ALL INNER ELEMENTS SO THAT NO MATTER WHERE IT IS DRAGGED FROM, IT WILL SHOW THE SAME ID
 		})
 	) : (
 		<></>
 	);
 
 
-
-
-
-	
 	const renderedServices =
 		services.length > 0 ? (
-			services.map((c) => {
+			services.map((c, index) =>  {
 				return (
 
 					<Draggable
-						ref={dragRef}
+					position={servicePositions[index]}
+					nodeRef={nodeRef}
 					onDrag={handleDrag}
-					bounds="body"
-					>
-
-					<div className="drag-wrapper" >
-					  <p>{c.name}</p>
-
-					</div>
-
+					onStop={handleStopServices}
+					bounds="body">
+						<div id={index} className="drag-wrapper" ref={nodeRef} >
+						  <p id={index}>{c.name}</p>
+						</div>
 				  </Draggable>
-				);
+				);//MUST SET ID AS INDEX ON ALL INNER ELEMENTS SO THAT NO MATTER WHERE IT IS DRAGGED FROM, IT WILL SHOW THE SAME ID
 			})
 		) : (
 			<></>
 		);
 
 	return (
-		<div>
-			<button onClick={getServices}>Get New Services</button>
-			<div className="ui relaxed divided list" >{renderedServices}</div>
-			<div className="ui relaxed divided list">{renderedRelationships}</div>;
+		<div >
+				<Row className="show-Grid">
+					<Col md={3} lg={3} xl={3} style={{background: "red"}}>
+						<button onClick={getServices} >Get New Services</button>
+						<div className="ui relaxed divided list" >{renderedServices}</div>
+					</Col>
+					<Col md={6} lg={6} xl={6} style={{background: "green"}}>
+						<label >Middle Column</label>
+					</Col>
+					<Col md={3} lg={3} xl={3} style={{background: "blue"}}>
+						<button onClick={getRelationships} >Get New Relationships</button>
+						<div className="ui relaxed divided list">{renderedRelationships}</div>
+					</Col>
+				</Row>
 		</div>
 	);
 };

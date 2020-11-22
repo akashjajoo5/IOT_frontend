@@ -31,17 +31,29 @@
 .drag-wrapper {
   width: 150px;
   height: 75px;
+  border-style: solid;
+  border-color: black;
+  border-width: thin;
   cursor: move;
   padding: 20px;
   text-align: left;
   background: #e5e5e5;
 }
+.rowClass {
+   padding: 0;
+   margin: 0;
+   text-align: left;
+   background: lightblue;
+ }
 
 .drag-wrapperR {
   width: 150px;
   height: 75px;
   cursor: move;
   padding: 20px;
+  border-style: solid;
+  border-color: black;
+  border-width: thin;
   text-align: left;
   background: #e5e5e5;
 }
