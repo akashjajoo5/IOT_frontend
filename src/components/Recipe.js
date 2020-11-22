@@ -15,6 +15,7 @@ const Recipe = () => {
 	const [services, setServices] = useState([]);
 	const [relationships, setRelationships] = useState([]);
 	const [deltaXyPos, setDeltaXyPos] = useState({x: 0, y: 0 });
+	const [deltaXyPosR, setDeltaXyPosR] = useState({x: 0, y: 0 });
 	const [dragRef, setDragRef] = useState(React.createRef());
 	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
 
@@ -68,7 +69,46 @@ const Recipe = () => {
 
 	};
 
+	const handleDragR = (e,c) => {
+		const {x,y} = deltaXyPosR;
+		console.log(dragRef);
 
+		setDeltaXyPosR({
+			x: x+c.deltaX,
+			y: y +c.deltaY,
+
+		});
+
+	};
+
+
+
+	const renderedRelationships =
+	relationships.length > 0 ? (
+		relationships.map((r) => {
+			return (
+			<Draggable
+			ref={dragRef}
+			onDrag={handleDragR}
+			bounds="body">
+
+			<div className="drag-wrapperR" >
+			  <p>{r.name}</p>
+
+			</div>
+
+		  </Draggable>
+			);
+		})
+	) : (
+		<></>
+	);
+
+
+
+
+
+	
 	const renderedServices =
 		services.length > 0 ? (
 			services.map((c) => {
@@ -77,7 +117,8 @@ const Recipe = () => {
 					<Draggable
 						ref={dragRef}
 					onDrag={handleDrag}
-					bounds="body">
+					bounds="body"
+					>
 
 					<div className="drag-wrapper" >
 					  <p>{c.name}</p>
@@ -95,6 +136,7 @@ const Recipe = () => {
 		<div>
 			<button onClick={getServices}>Get New Services</button>
 			<div className="ui relaxed divided list" >{renderedServices}</div>
+			<div className="ui relaxed divided list">{renderedRelationships}</div>;
 		</div>
 	);
 };

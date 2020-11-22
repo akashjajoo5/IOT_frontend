@@ -37,6 +37,15 @@
   background: #e5e5e5;
 }
 
+.drag-wrapperR {
+  width: 150px;
+  height: 75px;
+  cursor: move;
+  padding: 20px;
+  text-align: left;
+  background: #e5e5e5;
+}
+
 
 @keyframes App-logo-spin {
   from {
