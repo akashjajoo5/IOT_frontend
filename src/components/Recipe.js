@@ -2,11 +2,21 @@ import React, { useState, useEffect } from 'react';
 import axios from "axios";
 import Draggable from 'react-draggable';
 
+function getWindowDimensions() {
+	const { innerWidth: width, innerHeight: height } = window;
+	return {
+		width,
+		height
+	};
+}
+
+
 const Recipe = () => {
 	const [services, setServices] = useState([]);
 	const [relationships, setRelationships] = useState([]);
-	const [deltaXyPos,setDeltaXyPos] = useState({x:0,y:0});
-	//const [deltaXyPos,handleLimits] = useState({x:0,y:0});
+	const [deltaXyPos, setDeltaXyPos] = useState({x: 0, y: 0 });
+	const [dragRef, setDragRef] = useState(React.createRef());
+	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
 
 	const getServices = () => {
 		axios
@@ -36,15 +46,24 @@ const Recipe = () => {
 	useEffect(() => {
 		getServices();
 		getRelationships();
+		//add window resizing handlers and listeners
+		function handleResize() {
+			setWindowDimensions(getWindowDimensions());
+			console.log(windowDimensions);
+		}
+
+		window.addEventListener('resize', handleResize);
+		return () => window.removeEventListener('resize', handleResize);
 	}, []);
 
 	const handleDrag = (e,d) => {
 		const {x,y} = deltaXyPos;
-		
+		console.log(dragRef);
+
 		setDeltaXyPos({
 			x: x+d.deltaX,
 			y: y +d.deltaY,
-			
+
 		});
 
 	};
@@ -56,17 +75,15 @@ const Recipe = () => {
 				return (
 
 					<Draggable
-					onDrag={handleDrag} bounds={{ top: -40, left: 0, right: 100, bottom: 300 }}>
+						ref={dragRef}
+					onDrag={handleDrag}
+					bounds="body">
 
-	
 					<div className="drag-wrapper" >
 					  <p>{c.name}</p>
-					  <div>
-						<strong>x: {deltaXyPos.x.toFixed(0)}, </strong>
-						<strong>y: {deltaXyPos.y.toFixed(0)}</strong>
-					  </div>
+
 					</div>
-					
+
 				  </Draggable>
 				);
 			})
@@ -77,7 +94,7 @@ const Recipe = () => {
 	return (
 		<div>
 			<button onClick={getServices}>Get New Services</button>
-			<div className="ui relaxed divided list">{renderedServices}</div>
+			<div className="ui relaxed divided list" >{renderedServices}</div>
 		</div>
 	);
 
@@ -106,7 +123,7 @@ const Recipe = () => {
             <strong>y: {deltaXyPos.y.toFixed(0)}</strong>
           </div>
         </div>
-        
+
       </Draggable>
 	);
 };

@@ -29,10 +29,11 @@
 }
 
 .drag-wrapper {
-  width: 200px;
+  width: 150px;
+  height: 75px;
   cursor: move;
-  padding: 50px;
-  text-align: center;
+  padding: 20px;
+  text-align: left;
   background: #e5e5e5;
 }
 
