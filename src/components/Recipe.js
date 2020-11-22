@@ -97,35 +97,6 @@ const Recipe = () => {
 			<div className="ui relaxed divided list" >{renderedServices}</div>
 		</div>
 	);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	return (
-		<Draggable
-        onDrag={handleDrag} bounds={{ top: -40, left: 0, right: 100, bottom: 300 }}>
-
-        <div className="drag-wrapper">
-          <p>Drag position:</p>
-          <div>
-            <strong>x: {deltaXyPos.x.toFixed(0)}, </strong>
-            <strong>y: {deltaXyPos.y.toFixed(0)}</strong>
-          </div>
-        </div>
-
-      </Draggable>
-	);
 };
 
 export default Recipe;
