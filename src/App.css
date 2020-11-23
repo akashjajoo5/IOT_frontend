@@ -35,7 +35,9 @@
   border-color: black;
   border-width: thin;
   cursor: move;
-  padding: 20px;
+  padding: 5px;
+  margin-bottom: 20px;
+  margin-left: 25px;
   text-align: left;
   background: darkgray;
 }
@@ -56,6 +58,11 @@
   border-width: thin;
   text-align: left;
   background: #e5e5e5;
+}
+.inputDiv {
+  width: 75px;
+  height: 45px;
+  align-content: end;
 }
 
 .dragSpot {

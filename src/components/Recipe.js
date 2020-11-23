@@ -28,7 +28,7 @@ const Recipe = props => {
 		axios
 			.get('http://54.87.4.154:5000/getservices/')
 			.then((res) => {
-			//	console.log(res.data);
+				console.table(res.data);
 				setServices([...res.data]);
 			})
 			.catch((err) => {
@@ -117,7 +117,7 @@ const Recipe = props => {
 
 	const clearEditor = () => {
 		setRenderedServiceSpots([
-			<div className="dragSpot" id="dragSpot0" >
+			<div className="dragSpot" id="dragSpot0" style={{opacity: 1}}>
 				Drag Spot 0
 			</div>]
 		);
@@ -200,11 +200,14 @@ const Recipe = props => {
 		return {"x": left,"y": top}
 	};
 
-
 	const handleStartServices = (dragEvent, dragData) => {
 		//When dragging starts, use this to get the index of the dragged element so it can be used to set the elements position
-		//console.log(dragEvent);
-		setDraggedIndex(dragEvent.target.id);
+		if(isNaN(dragEvent.target.id)){
+			setDraggedIndex(-1);
+		}else{
+			setDraggedIndex(dragEvent.target.id);
+		}
+
 	};
 
 
@@ -213,7 +216,7 @@ const Recipe = props => {
 		//console.log(dragData);
 
 		//if the hovered element ID is a number (meaning one of the set spots was not hovered) return
-		if(!isNaN(dragEvent.target.id)){
+		if(!isNaN(dragEvent.target.id) || draggedIndex === -1 ){
 			return;
 		}
 
@@ -248,11 +251,12 @@ const Recipe = props => {
 				return;
 			}
 
-			//hoveredElement.style.display = 'none';	//hides desired spot
+			hoveredElement.style.opacity = '0'; //hides desired spot
 			tempPosition[draggedIndex] = calculatedPosition; //set new position of service
 
 			//update occupied array to show spot as occupied
 			let tempOccupiedArray = [...isDragSpotOccupied];
+			console.log("dragged index is", draggedIndex);
 			tempOccupiedArray[elementIndex] = services[draggedIndex].name;  //set occupied array slot equal to name of service for use in creation of App
 			setIsDragSpotOccupied(tempOccupiedArray);
 
@@ -264,6 +268,47 @@ const Recipe = props => {
 		setServicePositions(tempPosition);
 	};
 
+	const parseInputName = (inputString) => {
+
+		let firstQuoteIndex = inputString.indexOf('\"');
+		let lastQuoteIndex = inputString.indexOf('\"', firstQuoteIndex + 1);
+		let inputName = inputString.substring(firstQuoteIndex + 1, lastQuoteIndex);
+		inputName = inputName.replace(/\s/g, ''); //remove any spaces
+		return inputName;
+
+	};
+
+
+
+	const parseAPIstring = (APIString, index) => {
+		let firstBracketIndex = APIString.indexOf('[');
+		let lastBracketIndex = APIString.indexOf(']');
+
+		//console.log("first bracket index", firstBracketIndex, lastBracketIndex, index);
+		let innerString = APIString.substring(firstBracketIndex + 1, lastBracketIndex);
+		//console.log(innerString);
+
+		let inputUI = <div/>;
+		if(innerString.includes("|")){
+			//two inputs
+			let firstInputName = parseInputName(innerString);
+			let logicalOrIndex = innerString.indexOf('|');
+			let secondInputName = parseInputName(innerString.substring(logicalOrIndex));
+			inputUI = (<Row><input className="inputDiv" id={firstInputName} placeholder={firstInputName}/>
+						<input className="inputDiv" id={secondInputName} placeholder={secondInputName}/> </Row>);
+		}
+		else if(innerString.includes("\"")){
+			//one input
+			let inputName = parseInputName(innerString);
+			console.log(inputName);
+			inputUI = (<input className="inputDiv" id={inputName} placeholder={inputName}/>);
+		}
+		else{
+			//no inputs
+		}
+
+		return inputUI;
+	};
 
 	const renderedRelationships =
 	relationships.length > 0 ? (
@@ -300,6 +345,8 @@ const Recipe = props => {
 					>
 						<div id={index} className="drag-wrapper" ref={nodeRef} >
 						  <p id={index}>{c.name}</p>
+						<div id={index}>{parseAPIstring(c.APIstring, index)}</div>
+
 						</div>
 				  </Draggable>
 				);//MUST SET ID AS INDEX ON ALL INNER ELEMENTS SO THAT NO MATTER WHERE IT IS DRAGGED FROM, IT WILL SHOW THE SAME ID
