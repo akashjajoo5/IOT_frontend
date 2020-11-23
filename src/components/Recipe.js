@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import axios from "axios";
+import axios from 'axios';
 import Draggable from 'react-draggable';
-import { Container, Row, Col} from "react-bootstrap";
+import { Container, Row, Col } from 'react-bootstrap';
 
 function getWindowDimensions() {
 	const { innerWidth: width, innerHeight: height } = window;
 	return {
 		width,
-		height
+		height,
 	};
 }
 
-const Recipe = props => {
+const Recipe = (props) => {
 	const [services, setServices] = useState([]);
 	const [relationships, setRelationships] = useState([]);
 	const [servicePositions, setServicePositions] = useState([]);
@@ -19,16 +19,17 @@ const Recipe = props => {
 	const [renderedServiceSpots, setRenderedServiceSpots] = useState([]);
 
 	const [isDragSpotOccupied, setIsDragSpotOccupied] = useState([]);
-	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
+	const [windowDimensions, setWindowDimensions] = useState(
+		getWindowDimensions()
+	);
 	const [draggedIndex, setDraggedIndex] = useState(0); //THIS CONTAINS THE ELEMENT INDEX THAT WAS DRAGGED
-
 
 	const nodeRef = React.useRef(null);
 	const getServices = () => {
 		axios
 			.get('http://54.87.4.154:5000/getservices/')
 			.then((res) => {
-				console.table(res.data);
+				//	console.log(res.data);
 				setServices([...res.data]);
 			})
 			.catch((err) => {
@@ -54,10 +55,10 @@ const Recipe = props => {
 
 		//Add initial drag spot
 		setRenderedServiceSpots([
-			<div className="dragSpot" id="dragSpot0" >
+			<div className="dragSpot" id="dragSpot0">
 				Drag Spot 0
-			</div>]
-		);
+			</div>,
+		]);
 
 		//add window resizing handlers and listeners
 		function handleResize() {
@@ -75,9 +76,15 @@ const Recipe = props => {
 		setServicePositions([]);
 		setIsDragSpotOccupied([]);
 		//then set them all back to zero
-		for(let k = 0; k < services.length; k++){
-			setServicePositions(servicePositions => [...servicePositions, {"x": 0, "y": 0} ]);
-			setIsDragSpotOccupied(isDragSpotOccupied => [...isDragSpotOccupied, false ]);
+		for (let k = 0; k < services.length; k++) {
+			setServicePositions((servicePositions) => [
+				...servicePositions,
+				{ x: 0, y: 0 },
+			]);
+			setIsDragSpotOccupied((isDragSpotOccupied) => [
+				...isDragSpotOccupied,
+				false,
+			]);
 		}
 	}, [services]);
 
@@ -86,57 +93,67 @@ const Recipe = props => {
 		//clear all positions when services change and
 		setRelationshipPositions([]);
 		//then set them all back to zero
-		for(let k = 0; k < relationships.length; k++){
-			console.log("relationship length is " + relationships.length);
-			setRelationshipPositions(relationshipPositions => [...relationshipPositions, {"x": 0, "y": 0} ]);
+		for (let k = 0; k < relationships.length; k++) {
+			console.log('relationship length is ' + relationships.length);
+			setRelationshipPositions((relationshipPositions) => [
+				...relationshipPositions,
+				{ x: 0, y: 0 },
+			]);
 		}
 	}, [relationships]);
 
-	const handleDrag = (e,d) => {
+	const handleDrag = (e, d) => {
 		/*const {x,y} = deltaXyPos;
 
 		setDeltaXyPos({
 			x: x+d.deltaX,
 			y: y +d.deltaY
 		});		*/
-
 	};
 
 	const addSpot = () => {
 		let newIndex = renderedServiceSpots.length;
-		let newID= "dragSpot" + newIndex;
+		let newID = 'dragSpot' + newIndex;
 
-		setRenderedServiceSpots(renderedServiceSpots => [...renderedServiceSpots,
-			<div className="dragSpot" id={newID} >
+		setRenderedServiceSpots((renderedServiceSpots) => [
+			...renderedServiceSpots,
+			<div className="dragSpot" id={newID}>
 				Drag Spot {newIndex}
-				<br/>
-			</div>
+				<br />
+			</div>,
 		]);
 	};
 
-
 	const clearEditor = () => {
 		setRenderedServiceSpots([
-			<div className="dragSpot" id="dragSpot0" style={{opacity: 1}}>
+			<div className="dragSpot" id="dragSpot0">
 				Drag Spot 0
-			</div>]
-		);
+			</div>,
+		]);
 
 		//clear all positions
 		setIsDragSpotOccupied([]);
 		setServicePositions([]);
 		setRelationshipPositions([]);
 		//set defaults for services and occupied spots
-		for(let k = 0; k < services.length; k++){
-			setServicePositions(servicePositions => [...servicePositions, {"x": 0, "y": 0} ]);
-			setIsDragSpotOccupied(isDragSpotOccupied => [...isDragSpotOccupied, false ]);
+		for (let k = 0; k < services.length; k++) {
+			setServicePositions((servicePositions) => [
+				...servicePositions,
+				{ x: 0, y: 0 },
+			]);
+			setIsDragSpotOccupied((isDragSpotOccupied) => [
+				...isDragSpotOccupied,
+				false,
+			]);
 		}
 
 		//set defaults for relationships
-		for(let i = 0; i < relationships.length; i++){
-			setRelationshipPositions(relationshipPositions => [...relationshipPositions, {"x": 0, "y": 0} ]);
+		for (let i = 0; i < relationships.length; i++) {
+			setRelationshipPositions((relationshipPositions) => [
+				...relationshipPositions,
+				{ x: 0, y: 0 },
+			]);
 		}
-
 	};
 
 	const createApp = (e) => {
@@ -144,12 +161,13 @@ const Recipe = props => {
 		let tempApp = [];
 		//slow but it works I guess :/
 		isDragSpotOccupied.forEach((value, index) => {
-			if(value){ //checks if there is something other than false in array
-				services.forEach((service, serviceIndex)=> {
-					if(service.name === value){
+			if (value) {
+				//checks if there is something other than false in array
+				services.forEach((service, serviceIndex) => {
+					if (service.name === value) {
 						tempApp.push(service);
 					}
-				})
+				});
 			}
 		});
 
@@ -158,15 +176,13 @@ const Recipe = props => {
 		clearEditor();
 	};
 
-
-
 	const handleStopRelationships = (dragEvent, dragData) => {
 		console.log(dragEvent.target.id); //THIS CONTAINS THE ELEMENT INDEX THAT WAS DRAGGED
 		let tempPosition = [...relationshipPositions];
 
 		//NOTE: this has weird behavior with grid columns and does not work fully with them
 		//NOTE dragEvent holds data about x and y positions off the whole screen while dragData holds x and y info relative to individual element
-		tempPosition[dragEvent.target.id] = {"x":dragData.x , "y":dragData.y  };
+		tempPosition[dragEvent.target.id] = { x: dragData.x, y: dragData.y };
 
 		setRelationshipPositions(tempPosition);
 	};
@@ -189,34 +205,33 @@ const Recipe = props => {
 		return isOccupied;
 	}; */
 
-	const getAbsolutePosition = (element)  => {
-		let top = 0, left = 0;
+	const getAbsolutePosition = (element) => {
+		let top = 0,
+			left = 0;
 		do {
-			top += element.offsetTop  || 0;
+			top += element.offsetTop || 0;
 			left += element.offsetLeft || 0;
 			element = element.offsetParent;
-		} while(element);
+		} while (element);
 
-		return {"x": left,"y": top}
+		return { x: left, y: top };
 	};
 
 	const handleStartServices = (dragEvent, dragData) => {
 		//When dragging starts, use this to get the index of the dragged element so it can be used to set the elements position
-		if(isNaN(dragEvent.target.id)){
+		if (isNaN(dragEvent.target.id)) {
 			setDraggedIndex(-1);
-		}else{
+		} else {
 			setDraggedIndex(dragEvent.target.id);
 		}
-
 	};
-
 
 	const handleStopServices = (dragEvent, dragData) => {
 		//console.log(dragEvent);
 		//console.log(dragData);
 
 		//if the hovered element ID is a number (meaning one of the set spots was not hovered) return
-		if(!isNaN(dragEvent.target.id) || draggedIndex === -1 ){
+		if (!isNaN(dragEvent.target.id)) {
 			return;
 		}
 
@@ -225,8 +240,7 @@ const Recipe = props => {
 		console.log(dragEvent.target.id);
 		let hoveredElement = document.getElementById(dragEvent.target.id);
 		let domRect = hoveredElement.getBoundingClientRect();
-		let hoveredPositions  = getAbsolutePosition(hoveredElement);
-
+		let hoveredPositions = getAbsolutePosition(hoveredElement);
 
 		hoveredElement = document.getElementById(dragEvent.target.id);
 
@@ -234,20 +248,28 @@ const Recipe = props => {
 		//NOTE: this has weird behavior with grid columns and does not work fully with them
 		//NOTE dragEvent holds data about x and y positions off the whole screen while dragData holds x and y info relative to individual element
 		//check if service was dragged into spot
-		if((dragEvent.x > domRect.left && dragEvent.x < domRect.right)  &&  (dragEvent.y > domRect.top && dragEvent.y < domRect.bottom)){
+		if (
+			dragEvent.x > domRect.left &&
+			dragEvent.x < domRect.right &&
+			dragEvent.y > domRect.top &&
+			dragEvent.y < domRect.bottom
+		) {
 			//gets element that was dragged
 			let selectedElement = document.getElementById(draggedIndex);
-			let selectedPositions  = getAbsolutePosition(selectedElement);
+			let selectedPositions = getAbsolutePosition(selectedElement);
 
 			//set the position of the draggable to be equal to the difference between the absolute positions of the spot and the service
-			let calculatedPosition = {"x": Math.trunc(hoveredPositions.x - selectedPositions.x) , "y":  Math.trunc(hoveredPositions.y - selectedPositions.y)  };
+			let calculatedPosition = {
+				x: Math.trunc(hoveredPositions.x - selectedPositions.x),
+				y: Math.trunc(hoveredPositions.y - selectedPositions.y),
+			};
 
 			//Gets the index from the hoveredElements ID
-			let elementIndex = dragEvent.target.id.replace('dragSpot','');
+			let elementIndex = dragEvent.target.id.replace('dragSpot', '');
 			//console.log(elementIndex);
 
 			//check if service or relationship occupies this spot already
-			if(isDragSpotOccupied[elementIndex]){
+			if (isDragSpotOccupied[elementIndex]) {
 				return;
 			}
 
@@ -256,125 +278,76 @@ const Recipe = props => {
 
 			//update occupied array to show spot as occupied
 			let tempOccupiedArray = [...isDragSpotOccupied];
-			console.log("dragged index is", draggedIndex);
-			tempOccupiedArray[elementIndex] = services[draggedIndex].name;  //set occupied array slot equal to name of service for use in creation of App
+			tempOccupiedArray[elementIndex] = services[draggedIndex].name; //set occupied array slot equal to name of service for use in creation of App
 			setIsDragSpotOccupied(tempOccupiedArray);
 
 			//console.table(isDragSpotOccupied);
 		}
 
-
 		//console.table(tempPosition);
 		setServicePositions(tempPosition);
 	};
 
-	const parseInputName = (inputString) => {
-
-		let firstQuoteIndex = inputString.indexOf('\"');
-		let lastQuoteIndex = inputString.indexOf('\"', firstQuoteIndex + 1);
-		let inputName = inputString.substring(firstQuoteIndex + 1, lastQuoteIndex);
-		inputName = inputName.replace(/\s/g, ''); //remove any spaces
-		return inputName;
-
-	};
-
-
-
-	const parseAPIstring = (APIString, index) => {
-		let firstBracketIndex = APIString.indexOf('[');
-		let lastBracketIndex = APIString.indexOf(']');
-
-		//console.log("first bracket index", firstBracketIndex, lastBracketIndex, index);
-		let innerString = APIString.substring(firstBracketIndex + 1, lastBracketIndex);
-		//console.log(innerString);
-
-		let inputUI = <div/>;
-		if(innerString.includes("|")){
-			//two inputs
-			let firstInputName = parseInputName(innerString);
-			let logicalOrIndex = innerString.indexOf('|');
-			let secondInputName = parseInputName(innerString.substring(logicalOrIndex));
-			inputUI = (<Row><input className="inputDiv" id={firstInputName} placeholder={firstInputName}/>
-						<input className="inputDiv" id={secondInputName} placeholder={secondInputName}/> </Row>);
-		}
-		else if(innerString.includes("\"")){
-			//one input
-			let inputName = parseInputName(innerString);
-			console.log(inputName);
-			inputUI = (<input className="inputDiv" id={inputName} placeholder={inputName}/>);
-		}
-		else{
-			//no inputs
-		}
-
-		return inputUI;
-	};
-
 	const renderedRelationships =
-	relationships.length > 0 ? (
-		relationships.map((r, index) => {
-			return (
-			<Draggable
-			position={relationshipPositions[index]}
-			nodeRef={nodeRef}
-			onStop={handleStopRelationships}
-			onDrag={handleDrag}
-			>
-			<div id={index} className="drag-wrapperR" ref={nodeRef}>
-			  <p id={index}>{r.name}</p>
-			</div>
-		  </Draggable>
-			);//MUST SET ID AS INDEX ON ALL INNER ELEMENTS SO THAT NO MATTER WHERE IT IS DRAGGED FROM, IT WILL SHOW THE SAME ID
-		})
-	) : (
-		<></>
-	);
-
+		relationships.length > 0 ? (
+			relationships.map((r, index) => {
+				return (
+					<Draggable
+						position={relationshipPositions[index]}
+						nodeRef={nodeRef}
+						onStop={handleStopRelationships}
+						onDrag={handleDrag}
+					>
+						<div id={index} className="drag-wrapperR" ref={nodeRef}>
+							<p id={index}>{r.name}</p>
+						</div>
+					</Draggable>
+				); //MUST SET ID AS INDEX ON ALL INNER ELEMENTS SO THAT NO MATTER WHERE IT IS DRAGGED FROM, IT WILL SHOW THE SAME ID
+			})
+		) : (
+			<></>
+		);
 
 	const renderedServices =
 		services.length > 0 ? (
-			services.map((c, index) =>  {
+			services.map((c, index) => {
 				return (
-
 					<Draggable
-					position={servicePositions[index]}
-					nodeRef={nodeRef}
-					onDrag={handleDrag}
-					onStart={handleStartServices}
-					onStop={handleStopServices}
+						position={servicePositions[index]}
+						nodeRef={nodeRef}
+						onDrag={handleDrag}
+						onStart={handleStartServices}
+						onStop={handleStopServices}
 					>
-						<div id={index} className="drag-wrapper" ref={nodeRef} >
-						  <p id={index}>{c.name}</p>
-						<div id={index}>{parseAPIstring(c.APIstring, index)}</div>
-
+						<div id={index} className="drag-wrapper" ref={nodeRef}>
+							<p id={index}>{c.name}</p>
 						</div>
-				  </Draggable>
-				);//MUST SET ID AS INDEX ON ALL INNER ELEMENTS SO THAT NO MATTER WHERE IT IS DRAGGED FROM, IT WILL SHOW THE SAME ID
+					</Draggable>
+				); //MUST SET ID AS INDEX ON ALL INNER ELEMENTS SO THAT NO MATTER WHERE IT IS DRAGGED FROM, IT WILL SHOW THE SAME ID
 			})
 		) : (
 			<></>
 		);
 
 	return (
-		<div >
-				<Row className="show-Grid">
-					<Col md={3} lg={3} xl={3} style={{background: "red"}}>
-						<button onClick={getServices} >Get New Services</button>
-						<div className="ui relaxed divided list" >{renderedServices}</div>
-					</Col>
-					<Col md={6} lg={6} xl={6} style={{background: "none"}}>
-						<button onClick={addSpot} >Add New Spot</button>
-						<button onClick={clearEditor} >Clear Editor</button>
-						<button onClick={(e) => createApp(e)} >Finalize App</button>
+		<div>
+			<Row className="show-Grid">
+				<Col md={3} lg={3} xl={3} style={{ background: 'red' }}>
+					<button onClick={getServices}>Get New Services</button>
+					<div className="ui relaxed divided list">{renderedServices}</div>
+				</Col>
+				<Col md={6} lg={6} xl={6} style={{ background: 'none' }}>
+					<button onClick={addSpot}>Add New Spot</button>
+					<button onClick={clearEditor}>Clear Editor</button>
+					<button onClick={(e) => createApp(e)}>Finalize App</button>
 
-						<div className="ui relaxed divided list">{renderedServiceSpots}</div>
-
-					</Col>
-					<Col md={3} lg={3} xl={3} style={{background: "blue"}}>
-						<button onClick={getRelationships} >Get New Relationships</button>
-						<div className="ui relaxed divided list">{renderedRelationships}</div>
-					</Col>
-				</Row>
+					<div className="ui relaxed divided list">{renderedServiceSpots}</div>
+				</Col>
+				<Col md={3} lg={3} xl={3} style={{ background: 'blue' }}>
+					<button onClick={getRelationships}>Get New Relationships</button>
+					<div className="ui relaxed divided list">{renderedRelationships}</div>
+				</Col>
+			</Row>
 		</div>
 	);
 };

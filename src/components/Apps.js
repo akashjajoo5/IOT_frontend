@@ -1,12 +1,11 @@
 import React from 'react';
 
-const Apps = props => {
+const Apps = (props) => {
+	console.log(props);
 	const generateServicesUI = (app) => {
-		let services =[]
+		let services = [];
 		app.forEach((service, index) => {
-			services.push(
-				<div className="header">{service.name}</div>
-			)
+			services.push(<div className="header">{service.name}</div>);
 		});
 
 		return services;
@@ -33,7 +32,3 @@ const Apps = props => {
 };
 
 export default Apps;
-
-
-
-
