@@ -37,7 +37,7 @@
   cursor: move;
   padding: 20px;
   text-align: left;
-  background: #e5e5e5;
+  background: darkgray;
 }
 .rowClass {
    padding: 0;
@@ -58,6 +58,18 @@
   background: #e5e5e5;
 }
 
+.dragSpot {
+  width: 150px;
+  height: 75px;
+  cursor: move;
+  margin-bottom: 5px;
+  padding: 20px;
+  border-style: solid;
+  border-color: black;
+  border-width: thin;
+  text-align: left;
+  background: #61dafb;
+}
 
 @keyframes App-logo-spin {
   from {

@@ -8,9 +8,17 @@ import Recipe from './components/Recipe';
 import Apps from './components/Apps';
 import AppManager from './components/AppManager';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import React from "react";
+import React, { useState, useEffect } from 'react';
 
 function App() {
+	const [apps, setApps] = useState([]);
+
+	const addApp = (newApp) => {
+		setApps(apps => [...apps, newApp])
+	};
+
+
+
 	return (
 		<BrowserRouter>
 			<div className="App">
@@ -47,8 +55,8 @@ function App() {
 					<Route exact path="/" component={Things} />
 					<Route exact path="/services" component={Services} />
 					<Route exact path="/relationships" component={Relationships} />
-					<Route exact path="/recipe" component={Recipe} />
-					<Route exact path="/apps" component={Apps} />
+					<Route exact path="/recipe" component={() => (<Recipe apps={apps} addApp={addApp}/>)} />
+					<Route exact path="/apps" component={() => <Apps apps={apps}/>} />
 					<Route exact path="/appmanager" component={AppManager} />
 				</Switch>
 			</div>
