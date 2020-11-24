@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, {useEffect, useState} from 'react';
 import axios from "axios";
 import Draggable from 'react-draggable';
-import { Container, Row, Col} from "react-bootstrap";
+import {Col, Row} from "react-bootstrap";
 
 function getWindowDimensions() {
 	const { innerWidth: width, innerHeight: height } = window;
@@ -52,17 +52,9 @@ const Recipe = props => {
 		getServices();
 		getRelationships();
 
-		//Add initial drag spot
-		setRenderedServiceSpots([
-			<div className="dragSpot" id="dragSpot0" >
-				Drag Spot 0
-			</div>]
-		);
-
 		//add window resizing handlers and listeners
 		function handleResize() {
 			setWindowDimensions(getWindowDimensions());
-			console.log(windowDimensions);
 		}
 
 		window.addEventListener('resize', handleResize);
@@ -92,15 +84,46 @@ const Recipe = props => {
 		}
 	}, [relationships]);
 
-	const handleDrag = (e,d) => {
-		/*const {x,y} = deltaXyPos;
+	useEffect(() => {
+		//clear all positions when services change and
+		//console.log("Spots effect changed!");
+		//console.table(isDragSpotOccupied);
+		realignServices();
 
-		setDeltaXyPos({
-			x: x+d.deltaX,
-			y: y +d.deltaY
-		});		*/
+		if(renderedServiceSpots.length === 0){
+			addSpot();
+		}
+	}, [renderedServiceSpots]);
+
+	const handleDrag = (e,d) => {
 
 	};
+	//this function will realign the service with the drag spots
+
+	const realignServices = () => {
+		let tempPositions = [...servicePositions];
+
+		isDragSpotOccupied.forEach((value, index) => {
+			if(value){ //checks if there is something other than false in array
+				services.forEach((service, serviceIndex)=> {
+					if(service.name === value){
+						let dragSpotPosition = getAbsolutePosition(document.getElementById("dragSpot" + index));
+						let servicePosition = getAbsolutePosition(document.getElementById(serviceIndex));
+
+						tempPositions[serviceIndex] = {
+							"x": Math.trunc(dragSpotPosition.x - servicePosition.x),
+							"y": Math.trunc(dragSpotPosition.y - servicePosition.y)
+						};
+					}
+				})
+			}
+		});
+
+		setServicePositions(tempPositions);
+
+
+	};
+
 
 	const addSpot = () => {
 		let newIndex = renderedServiceSpots.length;
@@ -116,16 +139,12 @@ const Recipe = props => {
 
 
 	const clearEditor = () => {
-		setRenderedServiceSpots([
-			<div className="dragSpot" id="dragSpot0" style={{opacity: 1}}>
-				Drag Spot 0
-			</div>]
-		);
 
 		//clear all positions
 		setIsDragSpotOccupied([]);
 		setServicePositions([]);
 		setRelationshipPositions([]);
+		setRenderedServiceSpots([]);
 		//set defaults for services and occupied spots
 		for(let k = 0; k < services.length; k++){
 			setServicePositions(servicePositions => [...servicePositions, {"x": 0, "y": 0} ]);
@@ -136,15 +155,10 @@ const Recipe = props => {
 		for(let i = 0; i < relationships.length; i++){
 			setRelationshipPositions(relationshipPositions => [...relationshipPositions, {"x": 0, "y": 0} ]);
 		}
-
 	};
 
 	const createApp = (e) => {
-		/*
-			console.log("selected Element  is", selectedElement);
-			let innerElement = selectedElement.getElementsByClassName('inputDiv');
-			console.log("Inner Elements  are", innerElement[innerElement.length -1].value);
-		*/
+
 		e.preventDefault();
 		let tempApp = [];
 		//slow but it works I guess :/
@@ -153,8 +167,9 @@ const Recipe = props => {
 				services.forEach((service, serviceIndex)=> {
 					if(service.name === value){
 
-						let innerInputElements = document.getElementById(serviceIndex).getElementsByClassName('inputDiv'); //get service element by its Index
-						//console.log(innerInputElements);
+						//get service element Inputs
+						let innerInputElements = document.getElementById(serviceIndex).getElementsByClassName('inputClass');
+
 						service.inputCount= innerInputElements.length; 	//set number of Inputs
 						service.inputs = [];							//initialize empty array of inputs
 
@@ -164,7 +179,6 @@ const Recipe = props => {
 							service.inputs.push(tempValue);
 						}
 
-						console.log(service);
 						tempApp.push(service);
 					}
 				})
@@ -179,7 +193,7 @@ const Recipe = props => {
 
 
 	const handleStopRelationships = (dragEvent, dragData) => {
-		console.log(dragEvent.target.id); //THIS CONTAINS THE ELEMENT INDEX THAT WAS DRAGGED
+		//console.log(dragEvent.target.id); //THIS CONTAINS THE ELEMENT INDEX THAT WAS DRAGGED
 		let tempPosition = [...relationshipPositions];
 
 		//NOTE: this has weird behavior with grid columns and does not work fully with them
@@ -222,7 +236,7 @@ const Recipe = props => {
 
 		//gets the element that was hovered over
 		//console.log(dragEvent.target);
-		console.log(dragEvent.target.id);
+		//console.log(dragEvent.target.id);
 		let hoveredElement = document.getElementById(dragEvent.target.id);
 		let domRect = hoveredElement.getBoundingClientRect();
 		let hoveredPositions  = getAbsolutePosition(hoveredElement);
@@ -261,7 +275,7 @@ const Recipe = props => {
 
 			//update occupied array to show spot as occupied
 			let tempOccupiedArray = [...isDragSpotOccupied];
-			console.log("dragged index is", draggedIndex);
+			//console.log("dragged index is", draggedIndex);
 			tempOccupiedArray[elementIndex] = services[draggedIndex].name;  //set occupied array slot equal to name of service for use in creation of App
 			setIsDragSpotOccupied(tempOccupiedArray);
 
@@ -302,14 +316,14 @@ const Recipe = props => {
 				innerString.substring(logicalOrIndex)
 			);
 			inputUI = (
-				<Row>
+				<Row >
 					<input
-						className="inputDiv"
+						className="inputClass"
 						id={firstInputName}
 						placeholder={firstInputName}
 					/>
 					<input
-						className="inputDiv"
+						className="inputClass"
 						id={secondInputName}
 						placeholder={secondInputName}
 					/>{' '}
@@ -319,7 +333,7 @@ const Recipe = props => {
 			//one input
 			let inputName = parseInputName(innerString);
 			//console.log(inputName);
-			inputUI = (<input className="inputDiv" id={inputName} placeholder={inputName}/>);
+			inputUI = (<input className="inputClass" id={inputName} placeholder={inputName}/>);
 		}
 		else{
 			//no inputs
@@ -363,7 +377,7 @@ const Recipe = props => {
 					>
 						<div id={index} className="drag-wrapper" ref={nodeRef} >
 						  <p id={index}>{c.name}</p>
-						<div id={index}>{parseAPIstring(c.APIstring, index)}</div>
+						<div id={index} className="inputDiv" >{parseAPIstring(c.APIstring, index)}</div>
 
 						</div>
 				  </Draggable>
@@ -376,21 +390,24 @@ const Recipe = props => {
 	return (
 		<div >
 				<Row className="show-Grid">
-					<Col md={3} lg={3} xl={3} style={{background: "red"}}>
+					<Col md={3} lg={3} xl={3} className="serviceColClass" >
+						<h1 style={{color: "#61dafb" }}>Services</h1>
 						<button onClick={getServices} >Get New Services</button>
-						<div className="ui relaxed divided list" >{renderedServices}</div>
+						<div className="dragSpotDiv" >{renderedServices}</div>
 					</Col>
-					<Col md={6} lg={6} xl={6} style={{background: "none"}}>
+					<Col md={6} lg={6} xl={6} style={{background: "none" }}>
+						<h1 style={{color: "#61dafb" }}>App Editor</h1>
 						<button onClick={addSpot} >Add New Spot</button>
 						<button onClick={clearEditor} >Clear Editor</button>
 						<button onClick={(e) => createApp(e)} >Finalize App</button>
 
-						<div className="ui relaxed divided list">{renderedServiceSpots}</div>
+						<div className="dragSpotDiv">{renderedServiceSpots}</div>
 
 					</Col>
-					<Col md={3} lg={3} xl={3} style={{background: "blue"}}>
+					<Col md={3} lg={3} xl={3} className="relationshipColClass">
+						<h1 style={{color: "#61dafb" }}>Relationships</h1>
 						<button onClick={getRelationships} >Get New Relationships</button>
-						<div className="ui relaxed divided list">{renderedRelationships}</div>
+						<div className="dragSpotDiv">{renderedRelationships}</div>
 					</Col>
 				</Row>
 		</div>
