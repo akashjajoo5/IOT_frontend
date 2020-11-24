@@ -21,7 +21,7 @@ const AppManager = ({ apps }) => {
 				console.log('here');
 				console.log(apps[id][i]);
 				const res = await axios
-					.post('http://localhost:5000/runservice/', {
+					.post('http://54.87.4.154:5000/runservice/', {
 						tweet: apps[id][i],
 					})
 					.then((res) => {
