@@ -18,9 +18,11 @@ const AppManager = ({ apps }) => {
 		if (apps[id].length > 0) {
 			document.getElementById('status' + id).innerHTML = 'Status = Active';
 			for (let i = 0; i < apps[id].length; i++) {
+				console.log('here');
+				console.log(apps[id][i]);
 				const res = await axios
 					.post('http://localhost:5000/runservice/', {
-						tweet: apps[id][i]['APIstring'],
+						tweet: apps[id][i],
 					})
 					.then((res) => {
 						console.log(res);
