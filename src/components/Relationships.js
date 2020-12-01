@@ -4,7 +4,7 @@ import axios from 'axios';
 const Relationships = () => {
 	const [relationships, setRelationships] = useState([]);
 
-	const getThings = () => {
+	const getRelationships = () => {
 		axios
 			.get('http://54.87.4.154:5000/getrelationships/')
 			.then((res) => {
@@ -17,7 +17,7 @@ const Relationships = () => {
 	};
 
 	useEffect(() => {
-		getThings();
+		getRelationships();
 	}, []);
 
 	const renderedRelationships =
@@ -46,7 +46,12 @@ const Relationships = () => {
 			<></>
 		);
 
-	return <div className="ui relaxed divided list">{renderedRelationships}</div>;
+	return (
+		<div>
+			<button onClick={getRelationships}>Get New Relationships</button>
+			<div className="ui relaxed divided list">{renderedRelationships}</div>
+		</div>
+	);
 };
 
 export default Relationships;

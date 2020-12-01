@@ -18,6 +18,11 @@ function App() {
 		setApps((apps) => [...apps, newApp]);
 	};
 
+	const removeApp = (ap) => {
+		let temp = apps.filter((item) => item !== ap);
+		setApps(temp);
+	};
+
 	return (
 		<BrowserRouter>
 			<div className="App">
@@ -63,7 +68,9 @@ function App() {
 					<Route
 						exact
 						path="/appmanager"
-						component={() => <AppManager apps={apps} />}
+						component={() => (
+							<AppManager apps={apps} addApp={addApp} removeApp={removeApp} />
+						)}
 					/>
 				</Switch>
 			</div>

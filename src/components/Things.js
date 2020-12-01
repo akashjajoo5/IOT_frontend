@@ -41,7 +41,12 @@ const Things = () => {
 			<></>
 		);
 
-	return <div className="ui relaxed divided list">{renderedThings}</div>;
+	return (
+		<div>
+			<button onClick={getThings}>Get New Things</button>
+			<div className="ui relaxed divided list">{renderedThings}</div>
+		</div>
+	);
 };
 
 export default Things;
