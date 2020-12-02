@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Draggable from 'react-draggable';
 import { Col, Row } from 'react-bootstrap';
+import Helper from '../services/Helper';
 
 const Recipe = (props) => {
 	const [services, setServices] = useState([]);
@@ -18,8 +19,7 @@ const Recipe = (props) => {
 	const nodeRef = React.useRef(null);
 	const getServices = () => {
 		axios
-			.get('http://54.87.4.154:5000/getservices/')
-			//.get('http://localhost:5000/getservices/')
+			.get(Helper.getURL() + '/getservices')
 			.then((res) => {
 				console.table(res.data);
 				setServices([...res.data]);
@@ -31,8 +31,7 @@ const Recipe = (props) => {
 
 	const getRelationships = () => {
 		axios
-			.get('http://54.87.4.154:5000/getrelationships/')
-			//.get('http://localhost:5000/getrelationships/')
+			.get(Helper.getURL() + '/getrelationships')
 			.then((res) => {
 				console.log(res.data);
 				setRelationships([...res.data]);

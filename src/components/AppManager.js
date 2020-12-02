@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import ModalPopUp from './ModalPopUp';
+import Helper from '../services/Helper';
 
 const AppManager = ({ apps, addApp, removeApp }) => {
 	console.log(apps);
@@ -42,7 +43,7 @@ const AppManager = ({ apps, addApp, removeApp }) => {
 				newStr.push('Executing Service ' + i);
 				setLogOutput(newStr);
 				const res = await axios
-					.post('http://54.87.4.154:5000/runservice/', {
+					.post(Helper.getURL() + '/runservice', {
 						tweet: apps[id][i],
 					})
 					.then((res) => {

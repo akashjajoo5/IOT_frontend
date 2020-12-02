@@ -11,6 +11,26 @@ const Apps = (props) => {
 		return services;
 	};
 
+	var myWidget = window.cloudinary.createUploadWidget(
+		{
+			cloudName: 'dsgvwdu7t',
+			uploadPreset: 'x0udwssk',
+		},
+		(error, result) => {
+			if (!error && result && result.event === 'success') {
+				console.log('Done! Here is the image info: ', result.info);
+			}
+		}
+	);
+
+	document.getElementById('upload_widget').addEventListener(
+		'click',
+		function () {
+			myWidget.open();
+		},
+		false
+	);
+
 	const renderedApps =
 		props.apps.length > 0 ? (
 			props.apps.map((app, index) => {
@@ -27,6 +47,9 @@ const Apps = (props) => {
 	return (
 		<div>
 			<div className="ui relaxed divided list">{renderedApps}</div>
+			<button id="upload_widget" className="cloudinary-button">
+				Upload
+			</button>
 		</div>
 	);
 };

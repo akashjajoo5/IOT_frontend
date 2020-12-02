@@ -1,15 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Helper from '../services/Helper';
 
 const Things = () => {
 	const [things, setThings] = useState([]);
 
 	const getThings = () => {
 		axios
-			.get('http://54.87.4.154:5000/getthings/')
+			.get(Helper.getURL() + '/getthings')
 			.then((res) => {
 				console.log(res.data);
 				setThings([...res.data]);
+			})
+			.catch((err) => {
+				console.log(err);
+			});
+	};
+
+	const setImage = async (imageUrl, name) => {
+		await axios
+			.post(Helper.getURL() + '/setimageurl', {
+				imageUrl: imageUrl,
+				type: 'Things',
+				name: name,
+			})
+			.then((res) => {
+				console.log(res);
+				getThings();
 			})
 			.catch((err) => {
 				console.log(err);
@@ -24,19 +41,20 @@ const Things = () => {
 		things.length > 0 ? (
 			things.map((c) => {
 				return (
-					// <div key={c.name} className="item">
-					// 	<div className="content" style={{ fontSize: '20px' }}>
-					// 		<div className="header">{c.OS}</div>
-					// 		<div className="description">
-					// 			Description -{' '}
-					// 			{c.description === ''
-					// 				? 'No description provided.'
-					// 				: c.description}
-					// 		</div>
-					// 	</div>
-					// </div>
 					<div key={c.name} className="card">
 						<div className="content">
+							{c.imageUrl !== '' ? (
+								<img src={c.imageUrl} width="75%" height="150" alt="service" />
+							) : (
+								<img
+									src="https://semantic-ui.com/images/wireframe/image.png"
+									width="75%"
+									height="150"
+									alt="placeholder"
+								/>
+							)}
+							<br />
+							<br />
 							<div className="header">{c.name}</div>
 							<div className="meta">{c.owner}</div>
 							<div className="description">
@@ -44,6 +62,32 @@ const Things = () => {
 									? 'No description provided.'
 									: c.description}
 							</div>
+							<button
+								id="upload_widget"
+								onClick={() => {
+									window.cloudinary
+										.createUploadWidget(
+											{
+												cloudName: 'dsgvwdu7t',
+												uploadPreset: 'x0udwssk',
+											},
+											(error, result) => {
+												if (!error && result && result.event === 'success') {
+													c.imageUrl = result.info.url;
+													console.log(
+														'Done! Here is the image info: ',
+														result.info
+													);
+													setImage(result.info.url, c.name);
+												}
+											}
+										)
+										.open();
+								}}
+								className="ui button"
+							>
+								{c.imageUrl !== '' ? 'Update Image' : 'Upload Image'}
+							</button>
 						</div>
 					</div>
 				);
