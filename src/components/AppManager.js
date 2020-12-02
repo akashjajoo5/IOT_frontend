@@ -13,69 +13,75 @@ const AppManager = ({ apps, addApp, removeApp }) => {
 	const generateServicesUI = (app) => {
 		let services = [];
 		app.forEach((service, index) => {
-			services.push(<div className="header">{service.name}</div>);
+			services.push(
+				<div className="event">
+					<div className="content">
+						<div className="summary">{service.name}</div>
+					</div>
+				</div>
+			);
 		});
 
 		return services;
 	};
 
-	const startServices = async (id, status) => {
+	const startServices = async (id) => {
 		//console.log(apps[id]);
 		let newStr = [];
 		if (apps[id].length > 0) {
 			let temp = runningServices;
 			temp = temp.concat(id);
 			setRunningServices(temp);
+			apps[id].status = 'Active';
+			apps[id].startTime = Date.now();
 			newStr.push('Executing Services...');
 			setLogOutput(newStr);
 			for (let i = 0; i < apps[id].length; i++) {
 				//console.log('here');
 				//console.log(apps[id][i]);
-				if (status === 1) {
-					newStr.push('Executing Service ' + i);
-					setLogOutput(newStr);
-					const res = await axios
-						.post('http://54.87.4.154:5000/runservice/', {
-							tweet: apps[id][i],
-						})
-						.then((res) => {
-							let output = JSON.parse(res.data);
-							console.log(output);
-							newStr.push(
-								'Successfully executed Service ' +
-									i +
-									' (' +
-									output['Service Name'] +
-									')'
-							);
-							if (output['Service Result'] !== 'No Output') {
-								newStr.push('Output is ' + output['Service Result']);
-							} else {
-								newStr.push('Service has no output');
-							}
-							setLogOutput(newStr);
-							return 'completed';
-						})
-						.catch((err) => {
-							newStr.push('Error occured while executing Service ' + i);
-							setLogOutput(newStr);
-							return 'Error occured';
-						});
-					if (res === 'Error occured') {
-						newStr.push('Stopping execution...');
+				newStr.push('Executing Service ' + i);
+				setLogOutput(newStr);
+				const res = await axios
+					.post('http://54.87.4.154:5000/runservice/', {
+						tweet: apps[id][i],
+					})
+					.then((res) => {
+						let output = JSON.parse(res.data);
+						console.log(output);
+						newStr.push(
+							'Successfully executed Service ' +
+								i +
+								' (' +
+								output['Service Name'] +
+								')'
+						);
+						if (output['Service Result'] !== 'No Output') {
+							newStr.push('Output is ' + output['Service Result']);
+						} else {
+							newStr.push('Service has no output');
+						}
 						setLogOutput(newStr);
-						setTimeout(function () {
-							setLogOutput([]);
-							handleClose();
-						}, 3000);
-						temp = runningServices.filter((item) => item !== id);
-						setRunningServices(temp);
-						return;
-					}
-				} else {
-					break;
+						return 'completed';
+					})
+					.catch((err) => {
+						newStr.push('Error occured while executing Service ' + i);
+						setLogOutput(newStr);
+						return 'Error occured';
+					});
+				if (res === 'Error occured') {
+					apps[id].status = 'Error occured';
+					newStr.push('Stopping execution...');
+					setLogOutput(newStr);
+					setTimeout(function () {
+						setLogOutput([]);
+						handleClose();
+					}, 3000);
+					temp = runningServices.filter((item) => item !== id);
+					setRunningServices(temp);
+					return;
 				}
 			}
+			apps[id].status = 'Completed';
 			newStr.push('Finished executing');
 			setLogOutput(newStr);
 			setTimeout(function () {
@@ -100,45 +106,78 @@ const AppManager = ({ apps, addApp, removeApp }) => {
 		apps.length > 0 ? (
 			apps.map((app, index) => {
 				return (
-					<div key={index} className="item">
-						<div>{generateServicesUI(app)}</div>
-						<div className="ui icon buttons">
-							<button
-								onClick={() => {
-									startServices(index, 1);
-									setShow(true);
-								}}
-								className="ui button"
-							>
-								<i className="play icon"></i>
-							</button>
-							<button
-								className="ui button"
-								onClick={() => startServices(index, 0)}
-							>
-								<i className="stop icon"></i>
-							</button>
-							<a
-								className="ui button"
-								download="data.json"
-								href={
-									`data: text/json;charset=utf-8,` +
-									encodeURIComponent(JSON.stringify(apps[index]))
-								}
-							>
-								<i className="save icon"></i>
-							</a>
-							<button
-								className="ui button"
-								onClick={() => {
-									removeApp(app);
-								}}
-							>
-								<i className="delete icon"></i>
-							</button>
-						</div>
-						<div>
-							Status = {runningServices.includes(index) ? 'Active' : 'Inactive'}
+					<div className="four wide column">
+						<div key={index} className="ui card">
+							<div className="content">
+								<div className="header">{app.name}</div>
+							</div>
+							<div className="content">
+								<h4 className="ui header">Services</h4>
+								<div className="ui small feed">{generateServicesUI(app)}</div>
+								<div>
+									{app.status === 'Inactive' ||
+									app.status === 'Completed' ||
+									app.status === 'Error occured' ? (
+										<button
+											onClick={() => {
+												startServices(index);
+												setShow(true);
+											}}
+											className="circular ui icon button"
+											data-tooltip="Play"
+										>
+											<i className="play icon"></i>
+										</button>
+									) : (
+										<button
+											className="circular ui icon button"
+											onClick={() => startServices(index)}
+											data-tooltip="Stop"
+										>
+											<i className="stop icon"></i>
+										</button>
+									)}
+									<a
+										className="circular ui icon button"
+										download="data.json"
+										href={
+											`data: text/json;charset=utf-8,` +
+											encodeURIComponent(JSON.stringify(apps[index]))
+										}
+										data-tooltip="Save"
+									>
+										<i className="save icon"></i>
+									</a>
+									<button
+										className="circular ui icon button"
+										onClick={() => {
+											removeApp(app);
+										}}
+										data-tooltip="Delete"
+									>
+										<i className="delete icon"></i>
+									</button>
+								</div>
+							</div>
+							<div style={{ fontSize: '16px' }}>
+								Date created:
+								{new Date(app.dateCreated).toLocaleDateString('en-US', {
+									hour: 'numeric',
+									minute: 'numeric',
+								})}
+							</div>
+							{app.startTime !== '' && app.status === 'Active' ? (
+								<div style={{ fontSize: '16px' }}>
+									Start Time: {console.log(typeof app.startTime)}
+									{new Date(app.startTime).toLocaleDateString('en-US', {
+										hour: 'numeric',
+										minute: 'numeric',
+									})}
+								</div>
+							) : (
+								''
+							)}
+							<div style={{ fontSize: '16px' }}>Status: {app.status}</div>
 						</div>
 					</div>
 				);
@@ -173,7 +212,7 @@ const AppManager = ({ apps, addApp, removeApp }) => {
 				/>
 			</div>
 			<ModalPopUp s={show} handleClose={handleClose} logOutput={logOutput} />
-			<div className="ui relaxed divided list">{renderedApps}</div>
+			<div className="ui grid">{renderedApps}</div>
 		</div>
 	);
 };
