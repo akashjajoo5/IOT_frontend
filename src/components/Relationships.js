@@ -48,7 +48,9 @@ const Relationships = () => {
 
 	return (
 		<div>
-			<button onClick={getRelationships}>Get New Relationships</button>
+			<button className="ui button" onClick={getRelationships}>
+				Get New Relationships
+			</button>
 			<div className="ui relaxed divided list">{renderedRelationships}</div>
 		</div>
 	);

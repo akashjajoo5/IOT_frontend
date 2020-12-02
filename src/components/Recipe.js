@@ -678,24 +678,43 @@ const Recipe = (props) => {
 			<Row className="show-Grid">
 				<Col md={3} lg={3} xl={3} className="serviceColClass">
 					<h1 style={{ color: '#61dafb' }}>Services</h1>
-					<button onClick={getServices}>Get New Services</button>
+					<button className="ui button" onClick={getServices}>
+						Get New Services
+					</button>
 					<div className="dragSpotDiv">{renderedServices}</div>
 				</Col>
 				<Col md={6} lg={6} xl={6} style={{ background: 'none' }}>
 					<h1 style={{ color: '#61dafb' }}>App Editor</h1>
-					<button onClick={addSpot}>Add New Spot</button>
-					<button onClick={clearEditor}>Clear Editor</button>
-					<button onClick={(e) => createApp(e)}>Finalize App</button>
+					<button className="ui button" onClick={addSpot}>
+						Add New Spot
+					</button>
+					<button className="ui button" onClick={clearEditor}>
+						Clear Editor
+					</button>
+					<button className="ui button" onClick={(e) => createApp(e)}>
+						Finalize App
+					</button>
 					<div className="dragSpotDiv">{renderedDragSpots}</div>
 					<h1 className="errorLabel" id="statusLabel"></h1>
 					<Row className="inputDiv">
-						<h1>App Name: </h1>
-						<input id="appName" placeholder="Enter your app name" />
+						<h3>App Name: </h3>
+						<div className="ui left corner labeled input">
+							<input
+								type="text"
+								id="appName"
+								placeholder="Enter your app name"
+							/>
+							<div className="ui left corner label">
+								<i className="asterisk icon"></i>
+							</div>
+						</div>
 					</Row>
 				</Col>
 				<Col md={3} lg={3} xl={3} className="relationshipColClass">
 					<h1 style={{ color: '#61dafb' }}>Relationships</h1>
-					<button onClick={getRelationships}>Get New Relationships</button>
+					<button className="ui button" onClick={getRelationships}>
+						Get New Relationships
+					</button>
 					<div className="dragSpotDiv">{renderedRelationships}</div>
 				</Col>
 			</Row>

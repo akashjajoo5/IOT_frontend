@@ -24,11 +24,22 @@ const Services = () => {
 		services.length > 0 ? (
 			services.map((c) => {
 				return (
-					<div key={c.name} className="item">
-						<div className="content" style={{ fontSize: '20px' }}>
+					// <div key={c.name} className="item">
+					// 	<div className="content" style={{ fontSize: '20px' }}>
+					// 		<div className="header">{c.name}</div>
+					// 		<div className="description">
+					// 			Description -{' '}
+					// 			{c.description === ''
+					// 				? 'No description provided.'
+					// 				: c.description}
+					// 		</div>
+					// 	</div>
+					// </div>
+					<div key={c.name} className="card">
+						<div className="content">
 							<div className="header">{c.name}</div>
+							<div className="meta">{c.thingID}</div>
 							<div className="description">
-								Description -{' '}
 								{c.description === ''
 									? 'No description provided.'
 									: c.description}
@@ -43,8 +54,14 @@ const Services = () => {
 
 	return (
 		<div>
-			<button onClick={getServices}>Get New Services</button>
-			<div className="ui relaxed divided list">{renderedServices}</div>
+			<button className="ui button" onClick={getServices}>
+				Get New Services
+			</button>
+			<br />
+			<br />
+			<div className="ui cards" style={{ paddingLeft: '5%' }}>
+				{renderedServices}
+			</div>
 		</div>
 	);
 };

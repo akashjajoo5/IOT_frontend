@@ -24,11 +24,22 @@ const Things = () => {
 		things.length > 0 ? (
 			things.map((c) => {
 				return (
-					<div key={c.name} className="item">
-						<div className="content" style={{ fontSize: '20px' }}>
-							<div className="header">{c.OS}</div>
+					// <div key={c.name} className="item">
+					// 	<div className="content" style={{ fontSize: '20px' }}>
+					// 		<div className="header">{c.OS}</div>
+					// 		<div className="description">
+					// 			Description -{' '}
+					// 			{c.description === ''
+					// 				? 'No description provided.'
+					// 				: c.description}
+					// 		</div>
+					// 	</div>
+					// </div>
+					<div key={c.name} className="card">
+						<div className="content">
+							<div className="header">{c.name}</div>
+							<div className="meta">{c.owner}</div>
 							<div className="description">
-								Description -{' '}
 								{c.description === ''
 									? 'No description provided.'
 									: c.description}
@@ -43,8 +54,14 @@ const Things = () => {
 
 	return (
 		<div>
-			<button onClick={getThings}>Get New Things</button>
-			<div className="ui relaxed divided list">{renderedThings}</div>
+			<button className="ui button" onClick={getThings}>
+				Get New Things
+			</button>
+			<br />
+			<br />
+			<div className="ui cards" style={{ paddingLeft: '5%' }}>
+				{renderedThings}
+			</div>
 		</div>
 	);
 };
