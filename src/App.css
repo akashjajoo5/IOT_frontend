@@ -37,10 +37,8 @@
   cursor: move;
   margin-bottom: 10px;
   margin-right: 5px;
-
   display: inline-block;
   background: darkgray;
-
 }
 .rowClass {
    padding: 0;
@@ -49,16 +47,24 @@
    background: lightblue;
  }
 
+.errorLabel{
+  text-align: center;
+  justify-content: end;
+  align-content: center;
+}
+
+
 .drag-wrapperR {
   width: 150px;
   height: 75px;
-  cursor: move;
-  padding: 20px;
   border-style: solid;
   border-color: black;
   border-width: thin;
-  text-align: left;
-  background: #e5e5e5;
+  cursor: move;
+  margin-bottom: 10px;
+  margin-right: 5px;
+  display: inline-block;
+  background: lightgray;
 }
 .inputClass {
   width: 75px;
@@ -82,7 +88,8 @@
   border-width: thin;
   text-align: center;
   background: #61dafb;
-
+  position: relative;
+  z-index: 6;
 }
 
 .dragSpotDiv {
@@ -91,7 +98,6 @@
   justify-content: center;
   align-content: center;
   flex-wrap: wrap;
-
 }
 
 .serviceColClass{
