@@ -23,7 +23,7 @@ const Recipe = props => {
 			.get('http://54.87.4.154:5000/getservices/')
 			//.get('http://localhost:5000/getservices/')
 			.then((res) => {
-				console.table(res.data);
+				//console.table(res.data);
 				setServices([...res.data]);
 			})
 			.catch((err) => {
@@ -36,7 +36,7 @@ const Recipe = props => {
 			.get('http://54.87.4.154:5000/getrelationships/')
 			//.get('http://localhost:5000/getrelationships/')
 			.then((res) => {
-				console.log(res.data);
+				//console.log(res.data);
 				setRelationships([...res.data]);
 			})
 			.catch((err) => {
@@ -322,11 +322,14 @@ const Recipe = props => {
 		/*
 		TODO implement app reordering to put relevant services and relationships next to each other for simpler running
 		 */
-		tempApp.name = appName;
+		let completedApp = {};
+
+		completedApp.elements = tempApp;
+		completedApp.appName = appName;
 
 
-		//props.addApp(tempApp);
-		console.table(tempApp);
+		props.addApp(completedApp);
+		console.table(completedApp.elements);
 		clearEditor();
 	};
 /*
