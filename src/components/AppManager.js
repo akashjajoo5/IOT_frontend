@@ -8,6 +8,8 @@ const AppManager = ({ addApp, removeApp }) => {
 	const [runningServices, setRunningServices] = useState([]);
 	const [show, setShow] = useState(false);
 	const [logOutput, setLogOutput] = useState([]);
+	const [serviceOutput, setServiceOutput] = useState([]);
+
 	const handleClose = () => setShow(false);
 
 	const checkIfExpired = () => {
@@ -15,24 +17,27 @@ const AppManager = ({ addApp, removeApp }) => {
 			if (elem.startTime === '') {
 				if (Number(elem.dateCreated) < Date.now() - 300000) {
 					removeApp(elem);
+					getApps();
 				}
 			} else {
 				if (Number(elem.startTime) < Date.now() - 300000) {
 					removeApp(elem);
+					getApps();
 				}
 			}
 		});
 	};
 
 	const getApps = () => {
-		setApps(JSON.parse(localStorage.getItem('recipes')));
-		console.log(apps);
+		let temp = JSON.parse(localStorage.getItem('recipes'));
+		setApps(temp);
+		console.log(temp);
 	};
 
 	useEffect(() => {
 		const handle = setInterval(() => checkIfExpired(), 10000);
 		return () => clearInterval(handle);
-	}, []);
+	});
 
 	useEffect(() => {
 		getApps();
@@ -40,7 +45,16 @@ const AppManager = ({ addApp, removeApp }) => {
 
 	const generateServicesUI = (app) => {
 		let services = [];
+		let rflag = true;
+		let sflag = true;
 		app.forEach((service) => {
+			if (service.type !== 'service' && rflag) {
+				services.push(<h4 className="ui header">Relationship</h4>);
+				rflag = false;
+			} else if (sflag) {
+				services.push(<h4 className="ui header">Services</h4>);
+				sflag = false;
+			}
 			services.push(
 				<div className="event">
 					<div className="content">
@@ -53,71 +67,306 @@ const AppManager = ({ addApp, removeApp }) => {
 		return services;
 	};
 
+	const executeServices = async (app, newStr, i) => {
+		console.log(app);
+		return await axios
+			.post(Helper.getURL() + '/runservice', {
+				tweet: app,
+			})
+			.then((res) => {
+				let output = JSON.parse(res.data);
+				console.log(output);
+
+				newStr.push(
+					'Successfully executed Service ' +
+						i +
+						' (' +
+						output['Service Name'] +
+						')'
+				);
+
+				if (output['Service Result'] !== 'No Output') {
+					newStr.push('Output is ' + output['Service Result']);
+					let temp = serviceOutput;
+					temp.push(Number(output['Service Result']));
+					setServiceOutput(temp);
+				} else {
+					newStr.push('Service has no output');
+				}
+				setLogOutput(newStr);
+				return 'completed';
+			})
+			.catch((err) => {
+				console.log(err);
+				newStr.push('Error occured while executing Service ' + i);
+				setLogOutput(newStr);
+				return 'Error occured';
+			});
+	};
+
 	const startServices = async (id) => {
 		//console.log(apps[id]);
 		let newStr = [];
+		let rType = '';
+
 		if (apps[id].appElements.length > 0) {
 			let temp = runningServices;
 			temp = temp.concat(id);
 			setRunningServices(temp);
+
 			apps[id].status = 'Active';
 			apps[id].startTime = Date.now();
 			newStr.push('Executing Services...');
 			setLogOutput(newStr);
-			for (let i = 0; i < apps[id].appElements.length; i++) {
-				//console.log('here');
-				//console.log(apps[id][i]);
-				newStr.push('Executing Service ' + i);
-				setLogOutput(newStr);
-				const res = await axios
-					.post(Helper.getURL() + '/runservice', {
-						tweet: apps[id]['appElements'][i],
-					})
-					.then((res) => {
-						let output = JSON.parse(res.data);
-						console.log(output);
-						newStr.push(
-							'Successfully executed Service ' +
-								i +
-								' (' +
-								output['Service Name'] +
-								')'
-						);
-						if (output['Service Result'] !== 'No Output') {
-							newStr.push('Output is ' + output['Service Result']);
-						} else {
-							newStr.push('Service has no output');
-						}
-						setLogOutput(newStr);
-						return 'completed';
-					})
-					.catch((err) => {
-						newStr.push('Error occured while executing Service ' + i);
-						setLogOutput(newStr);
-						return 'Error occured';
-					});
-				if (res === 'Error occured') {
-					apps[id].status = 'Error occured';
-					newStr.push('Stopping execution...');
-					setLogOutput(newStr);
-					setTimeout(function () {
-						setLogOutput([]);
-						handleClose();
-					}, 3000);
-					temp = runningServices.filter((item) => item !== id);
-					setRunningServices(temp);
-					return;
+
+			if (apps[id].appElements.length > 1) {
+				if (apps[id]['appElements'][0].type !== 'service') {
+					rType = apps[id]['appElements'][0].type;
 				}
 			}
-			apps[id].status = 'Completed';
-			newStr.push('Finished executing');
-			setLogOutput(newStr);
-			setTimeout(function () {
-				setLogOutput([]);
-				handleClose();
-			}, 7000);
-			temp = runningServices.filter((item) => item !== id);
-			setRunningServices(temp);
+
+			if (rType === '') {
+				for (let i = 0; i < apps[id].appElements.length; i++) {
+					//console.log('here');
+					//console.log(apps[id][i]);
+					newStr.push('Executing Service ' + i);
+					setLogOutput(newStr);
+
+					const res = await executeServices(
+						apps[id]['appElements'][i],
+						newStr,
+						i
+					);
+
+					if (res === 'Error occured') {
+						apps[id].status = 'Error occured';
+						newStr.push('Stopping execution...');
+						setLogOutput(newStr);
+
+						setTimeout(function () {
+							setLogOutput([]);
+							handleClose();
+						}, 3000);
+
+						temp = runningServices.filter((item) => item !== id);
+						setRunningServices(temp);
+
+						return;
+					}
+				}
+				apps[id].status = 'Completed';
+				newStr.push('Finished executing');
+				setLogOutput(newStr);
+
+				setTimeout(function () {
+					setLogOutput([]);
+					handleClose();
+				}, 7000);
+
+				temp = runningServices.filter((item) => item !== id);
+				setRunningServices(temp);
+			} else if (rType === 'contest' || rType === 'support') {
+				for (let i = 1; i < apps[id].appElements.length; i++) {
+					//console.log('here');
+					//console.log(apps[id][i]);
+					newStr.push('Executing Service ' + i);
+					setLogOutput(newStr);
+
+					const res = await executeServices(
+						apps[id]['appElements'][i],
+						newStr,
+						i
+					);
+
+					if (res === 'Error occured') {
+						apps[id].status = 'Error occured';
+						newStr.push('Stopping execution...');
+						setLogOutput(newStr);
+
+						setTimeout(function () {
+							setLogOutput([]);
+							handleClose();
+						}, 3000);
+
+						temp = runningServices.filter((item) => item !== id);
+						setRunningServices(temp);
+
+						return;
+					}
+				}
+				apps[id].status = 'Completed';
+				newStr.push('Finished executing');
+				setLogOutput(newStr);
+
+				setTimeout(function () {
+					setLogOutput([]);
+					handleClose();
+				}, 7000);
+
+				temp = runningServices.filter((item) => item !== id);
+				setRunningServices(temp);
+			} else if (rType === 'drive') {
+				setServiceOutput([]);
+				for (let i = 1; i < apps[id].appElements.length; i++) {
+					//console.log('here');
+					//console.log(apps[id][i]);
+					newStr.push('Executing Service ' + i);
+					setLogOutput(newStr);
+
+					if (serviceOutput.length > 0) {
+						let count = apps[id]['appElements'][i].inputCount;
+						let input = [];
+						if (serviceOutput.length >= count) {
+							for (
+								let i = serviceOutput.length - count;
+								i < serviceOutput.length;
+								i++
+							) {
+								if (serviceOutput[i] >= 15) {
+									serviceOutput[i] = 4;
+								}
+								input.push(serviceOutput[i]);
+							}
+							apps[id]['appElements'][i].inputs = input;
+						}
+					}
+
+					const res = await executeServices(
+						apps[id]['appElements'][i],
+						newStr,
+						i
+					);
+
+					if (res === 'Error occured') {
+						apps[id].status = 'Error occured';
+						newStr.push('Stopping execution...');
+						setLogOutput(newStr);
+
+						setTimeout(function () {
+							setLogOutput([]);
+							handleClose();
+						}, 3000);
+
+						temp = runningServices.filter((item) => item !== id);
+						setRunningServices(temp);
+
+						return;
+					}
+				}
+				apps[id].status = 'Completed';
+				newStr.push('Finished executing');
+				setLogOutput(newStr);
+
+				setTimeout(function () {
+					setLogOutput([]);
+					handleClose();
+				}, 7000);
+
+				temp = runningServices.filter((item) => item !== id);
+				setRunningServices(temp);
+			} else if (rType === 'control') {
+				setServiceOutput([]);
+				let condition = apps[id]['appElements'][0].conditional;
+				let controlParam = apps[id]['appElements'][0].controlParam;
+				for (let i = 1; i < apps[id].appElements.length; i++) {
+					//console.log('here');
+					//console.log(apps[id][i]);
+					newStr.push('Executing Service ' + i);
+					setLogOutput(newStr);
+
+					if (serviceOutput.length > 0 && i > 1) {
+						if (condition === '>') {
+							if (
+								serviceOutput[serviceOutput.length - 1] < parseInt(controlParam)
+							) {
+								apps[id].status = 'Error occured';
+								newStr.push('Input criteria not satisfied...');
+								setLogOutput(newStr);
+
+								setTimeout(function () {
+									setLogOutput([]);
+									handleClose();
+								}, 3000);
+
+								temp = runningServices.filter((item) => item !== id);
+								setRunningServices(temp);
+
+								return;
+							}
+						} else if (condition === '<') {
+							if (
+								serviceOutput[serviceOutput.length - 1] > parseInt(controlParam)
+							) {
+								apps[id].status = 'Error occured';
+								newStr.push('Input criteria not satisfied...');
+								setLogOutput(newStr);
+
+								setTimeout(function () {
+									setLogOutput([]);
+									handleClose();
+								}, 3000);
+
+								temp = runningServices.filter((item) => item !== id);
+								setRunningServices(temp);
+
+								return;
+							}
+						} else if (condition === '=') {
+							if (
+								serviceOutput[serviceOutput.length - 1] !==
+								parseInt(controlParam)
+							) {
+								apps[id].status = 'Error occured';
+								newStr.push('Input criteria not satisfied...');
+								setLogOutput(newStr);
+
+								setTimeout(function () {
+									setLogOutput([]);
+									handleClose();
+								}, 3000);
+
+								temp = runningServices.filter((item) => item !== id);
+								setRunningServices(temp);
+
+								return;
+							}
+						}
+					}
+
+					const res = await executeServices(
+						apps[id]['appElements'][i],
+						newStr,
+						i
+					);
+
+					if (res === 'Error occured') {
+						apps[id].status = 'Error occured';
+						newStr.push('Stopping execution...');
+						setLogOutput(newStr);
+
+						setTimeout(function () {
+							setLogOutput([]);
+							handleClose();
+						}, 3000);
+
+						temp = runningServices.filter((item) => item !== id);
+						setRunningServices(temp);
+
+						return;
+					}
+				}
+				apps[id].status = 'Completed';
+				newStr.push('Finished executing');
+				setLogOutput(newStr);
+
+				setTimeout(function () {
+					setLogOutput([]);
+					handleClose();
+				}, 7000);
+
+				temp = runningServices.filter((item) => item !== id);
+				setRunningServices(temp);
+			}
 		}
 	};
 
@@ -138,9 +387,24 @@ const AppManager = ({ addApp, removeApp }) => {
 						<div key={index} className="ui card">
 							<div className="content">
 								<div className="header">{app.name}</div>
+								{app.imageUrl !== '' ? (
+									<img
+										src={app.imageUrl}
+										width="75%"
+										height="150"
+										alt="service"
+									/>
+								) : (
+									<img
+										src="https://semantic-ui.com/images/wireframe/image.png"
+										width="75%"
+										height="150"
+										alt="placeholder"
+									/>
+								)}
 							</div>
 							<div className="content">
-								<h4 className="ui header">Services</h4>
+								{/* <h4 className="ui header">Services</h4> */}
 								<div className="ui small feed">
 									{generateServicesUI(app.appElements)}
 								</div>
@@ -182,6 +446,7 @@ const AppManager = ({ addApp, removeApp }) => {
 										className="circular ui icon button"
 										onClick={() => {
 											removeApp(app);
+											getApps();
 										}}
 										data-tooltip="Delete"
 									>
@@ -190,7 +455,7 @@ const AppManager = ({ addApp, removeApp }) => {
 								</div>
 							</div>
 							<div style={{ fontSize: '16px' }}>
-								Date created:
+								Date Loaded:
 								{new Date(app.dateCreated).toLocaleDateString('en-US', {
 									hour: 'numeric',
 									minute: 'numeric',

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 
-const Apps = ({ addApp, permApps, removePermApp }) => {
+const Apps = ({ addApp, removePermApp, updateImgUrl }) => {
 	const [apps, setApps] = useState([]);
 
 	const getApps = () => {
-		setApps(JSON.parse(localStorage.getItem('permrecipes')));
-		console.log(apps);
+		let temp = JSON.parse(localStorage.getItem('permrecipes'));
+		setApps(temp);
+		console.log(temp);
 	};
 
 	useEffect(() => {
@@ -14,7 +15,16 @@ const Apps = ({ addApp, permApps, removePermApp }) => {
 
 	const generateServicesUI = (app) => {
 		let services = [];
+		let rflag = true;
+		let sflag = true;
 		app.forEach((service) => {
+			if (service.type !== 'service' && rflag) {
+				services.push(<h4 className="ui header">Relationship</h4>);
+				rflag = false;
+			} else if (sflag) {
+				services.push(<h4 className="ui header">Services</h4>);
+				sflag = false;
+			}
 			services.push(
 				<div className="event">
 					<div className="content">
@@ -35,13 +45,59 @@ const Apps = ({ addApp, permApps, removePermApp }) => {
 						<div key={index} className="ui card">
 							<div className="content">
 								<div className="header">{app.name}</div>
+								{app.imageUrl !== '' ? (
+									<img
+										src={app.imageUrl}
+										width="75%"
+										height="150"
+										alt="service"
+									/>
+								) : (
+									<img
+										src="https://semantic-ui.com/images/wireframe/image.png"
+										width="75%"
+										height="150"
+										alt="placeholder"
+									/>
+								)}
 							</div>
 							<div className="content">
-								<h4 className="ui header">Services</h4>
+								{/* <h4 className="ui header">Services</h4> */}
 								<div className="ui small feed">
 									{generateServicesUI(app.appElements)}
 								</div>
 								<div>
+									<button
+										id="upload_widget"
+										onClick={() => {
+											window.cloudinary
+												.createUploadWidget(
+													{
+														cloudName: 'dsgvwdu7t',
+														uploadPreset: 'x0udwssk',
+													},
+													(error, result) => {
+														if (
+															!error &&
+															result &&
+															result.event === 'success'
+														) {
+															app.imageUrl = result.info.url;
+															console.log(
+																'Done! Here is the image info: ',
+																result.info
+															);
+															updateImgUrl(app);
+															getApps();
+														}
+													}
+												)
+												.open();
+										}}
+										className="ui button"
+									>
+										{app.imageUrl !== '' ? 'Update Image' : 'Upload Image'}
+									</button>
 									<button
 										onClick={() => {
 											addApp(app);
@@ -70,17 +126,6 @@ const Apps = ({ addApp, permApps, removePermApp }) => {
 									minute: 'numeric',
 								})}
 							</div>
-							{app.startTime !== '' && app.status === 'Active' ? (
-								<div style={{ fontSize: '16px' }}>
-									Start Time: {console.log(typeof app.startTime)}
-									{new Date(app.startTime).toLocaleDateString('en-US', {
-										hour: 'numeric',
-										minute: 'numeric',
-									})}
-								</div>
-							) : (
-								''
-							)}
 						</div>
 					</div>
 				);

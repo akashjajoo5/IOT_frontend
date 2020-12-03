@@ -27,7 +27,7 @@ function App() {
 	const addPermApp = (newApp) => {
 		let temp = [...permApps, newApp];
 		setPermApps(temp);
-		//console.log(temp);
+		console.log(temp);
 		//console.log(JSON.stringify(temp));
 		localStorage.setItem('permrecipes', JSON.stringify(temp));
 	};
@@ -43,6 +43,22 @@ function App() {
 		localStorage.setItem('permrecipes', JSON.stringify(temp));
 		setPermApps(temp);
 		console.log(temp);
+	};
+
+	const updateImgUrl = async (ap) => {
+		//let temp = permApps.filter((item) => item.name === ap.name);
+		//console.log(temp);
+		console.log(ap);
+		let temp = permApps.filter((item) => item.name !== ap.name);
+		localStorage.setItem('permrecipes', JSON.stringify(temp));
+		//setPermApps(temp);
+		//console.log(temp);
+
+		temp = [...temp, ap];
+		setPermApps(temp);
+		console.log(temp);
+		//console.log(JSON.stringify(temp));
+		localStorage.setItem('permrecipes', JSON.stringify(temp));
 	};
 
 	return (
@@ -92,8 +108,8 @@ function App() {
 						component={() => (
 							<Apps
 								addApp={addApp}
-								permApps={permApps}
 								removePermApp={removePermApp}
+								updateImgUrl={updateImgUrl}
 							/>
 						)}
 					/>
