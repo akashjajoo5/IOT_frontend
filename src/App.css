@@ -104,6 +104,14 @@
   align-content: center;
 }
 
+.appNameInput {
+  width: 175px;
+  height: 40px;
+  vertical-align: bottom;
+  margin-left: 10px;
+}
+
+
 .dragSpot {
   width: 150px;
   height: 75px;

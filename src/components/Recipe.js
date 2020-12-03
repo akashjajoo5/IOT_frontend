@@ -190,7 +190,7 @@ const Recipe = (props) => {
 		let ignoreIndexes = []; //use this array to hold an integer array of all of the indexes of the dragSpot occupied that should be skipped
 		let appDesignError = false;
 		let errorText = "";
-		console.table(isDragSpotOccupied);
+		//console.table(isDragSpotOccupied);
 		isDragSpotOccupied.forEach((value, index) => {
 			if(value && !ignoreIndexes.includes(index) && !appDesignError){ //checks if there is something other than false in array
 				console.log(value);
@@ -514,6 +514,7 @@ const Recipe = (props) => {
 		}
 
 		console.table(tempApp);
+		console.table(isDragSpotOccupied);
 
 
 		let finalApp = {
@@ -526,7 +527,9 @@ const Recipe = (props) => {
 
 		//console.log(finalApp);
 		props.addApp(finalApp);
-		//console.table(tempApp);
+		label.innerText = "App saved successfully";
+		label.style.color = "black";
+
 		clearEditor();
 	};
 /*
@@ -691,6 +694,11 @@ const Recipe = (props) => {
  */
 
 	const getAbsolutePosition = (element)  => {
+		if(element === null || element ===undefined){
+			return {"x": 0,"y": 0}
+		}
+
+
 		let top = 0, left = 0;
 		do {
 			top += element.offsetTop  || 0;
@@ -886,6 +894,7 @@ const Recipe = (props) => {
 						<Row className ="inputDiv">
 							<h1 >App Name:  </h1>
 							<input
+								className="appNameInput"
 								id='appName'
 								placeholder="Enter your app name"
 							/>
