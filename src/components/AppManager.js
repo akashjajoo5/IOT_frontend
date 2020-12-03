@@ -227,9 +227,6 @@ const AppManager = ({ addApp, removeApp }) => {
 								i < serviceOutput.length;
 								i++
 							) {
-								if (serviceOutput[i] >= 15) {
-									serviceOutput[i] = 4;
-								}
 								input.push(serviceOutput[i]);
 							}
 							apps[id]['appElements'][i].inputs = input;
