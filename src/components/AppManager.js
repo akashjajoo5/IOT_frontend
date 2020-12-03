@@ -165,7 +165,12 @@ const AppManager = ({ addApp, removeApp }) => {
 
 				temp = runningServices.filter((item) => item !== id);
 				setRunningServices(temp);
-			} else if (rType === 'contest' || rType === 'support') {
+			} else if (
+				rType === 'contest' ||
+				rType === 'support' ||
+				rType === 'extend' ||
+				rType === 'interfere'
+			) {
 				for (let i = 1; i < apps[id].appElements.length; i++) {
 					//console.log('here');
 					//console.log(apps[id][i]);
