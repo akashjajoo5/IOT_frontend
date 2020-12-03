@@ -69,7 +69,7 @@ const Recipe = (props) => {
 		//clear all positions when services change and
 		setRelationshipPositions([]);
 		//then set them all back to zero
-		console.log('relationship length is ' + relationships.length);
+		//console.log('relationship length is ' + relationships.length);
 		for (let k = 0; k < relationships.length; k++) {
 			setRelationshipPositions((relationshipPositions) => [
 				...relationshipPositions,
@@ -96,9 +96,6 @@ const Recipe = (props) => {
 		}
 	}, [renderedDragSpots]);
 
-	const handleDrag = (e, d) => {};
-	//this function will realign the service with the drag spots
-
 	const realignFilledSpots = () => {
 		let tempServicePositions = [...servicePositions];
 		let tempRelationshipPositions = [...relationshipPositions];
@@ -115,7 +112,7 @@ const Recipe = (props) => {
 							"y": Math.trunc(dragSpotPosition.y - servicePosition.y)
 						};
 					}
-				})
+				});
 
 				//Add service realign
 
@@ -178,10 +175,11 @@ const Recipe = (props) => {
 		for(let i = 0; i < (services.length + relationships.length); i++){
 			setIsDragSpotOccupied(isDragSpotOccupied => [...isDragSpotOccupied, false ]);
 		}
-
+		//clear status label and inputs
 		let label = document.getElementById("statusLabel");
 		label.innerText = "";
-
+		let appNameInput = document.getElementById("appName");
+		appNameInput.value = "";
 	};
 
 	const createApp = (e) => {
@@ -192,9 +190,11 @@ const Recipe = (props) => {
 		let ignoreIndexes = []; //use this array to hold an integer array of all of the indexes of the dragSpot occupied that should be skipped
 		let appDesignError = false;
 		let errorText = "";
-		//slow but it works I guess :/
+		console.table(isDragSpotOccupied);
 		isDragSpotOccupied.forEach((value, index) => {
 			if(value && !ignoreIndexes.includes(index) && !appDesignError){ //checks if there is something other than false in array
+				console.log(value);
+
 				services.forEach((service, serviceIndex)=> {
 					if(service.name === value){
 
@@ -210,7 +210,12 @@ const Recipe = (props) => {
 							service.inputs.push(tempValue);
 						}
 
-						tempApp.push(service);
+						tempApp.push({...service});
+						//console.log("temp app length is: ", tempApp.length);
+						//tempApp[tempApp.length] = {...service};
+						//console.log("Added element ", service);
+					//	console.table(tempApp);
+
 					}
 
 				});
@@ -219,21 +224,14 @@ const Recipe = (props) => {
 				relationships.forEach((relationship, relationshipIndex)=> {
 					if(relationship.name === value){
 
-						//Check if services exist in the current app
-						if(!isDragSpotOccupied.includes(relationship.firstService) || !isDragSpotOccupied.includes(relationship.secondService)){
-							appDesignError = true;
-							errorText = "You must include all services required for a relationship: " + relationship.name;
-							return;
-						}
-
 						//check conditionals for each relationship type
 						switch (relationship.type) {
 							case 'contest': //prefer service 1 over service 2
 								//check to see if service 2 is already in the temp app
 								let removeIndex = -1;
-								tempApp.forEach((appElement, index) => {
+								tempApp.forEach((appElement, appIndex) => {
 									if(appElement.type === 'service' && appElement.name === relationship.secondService){
-										removeIndex = index;
+										removeIndex = appIndex;
 									}
 								});
 								//if the service is in the app already, remove it
@@ -247,9 +245,14 @@ const Recipe = (props) => {
 
 
 							case 'drive':
+								//Check if services exist in the current app for drive relationship
+								if(!isDragSpotOccupied.includes(relationship.firstService) || !isDragSpotOccupied.includes(relationship.secondService)){
+									appDesignError = true;
+									errorText = "You must include all services required for a relationship: " + relationship.name;
+									return;
+								}
+
 								//Just need to check if the number of inputs and outputs on the services match up
-
-
 								let numServiceOneOutputs = 0;
 								let numServiceTwoInputs = 0;
 
@@ -265,58 +268,95 @@ const Recipe = (props) => {
 
 								});
 
-								console.log("Service 1 has: ", numServiceOneOutputs," outputs and service 2 has: ", numServiceTwoInputs, " inputs");
+								//console.log("Service 1 has: ", numServiceOneOutputs," outputs and service 2 has: ", numServiceTwoInputs, " inputs");
 
 								if(numServiceOneOutputs === 0){
+									//TODO UNCOMMENT THIS
 									appDesignError = true;
 									errorText= "Service " + relationship.firstService + " has no outputs and cannot drive another service";
 									return;
 								}
 
 								if(numServiceOneOutputs !== numServiceTwoInputs){
+									//TODO UNCOMMENT THIS
 									appDesignError = true;
 									errorText = "Service " + relationship.firstService + " and " + relationship.secondService + " have mismatched inputs and outputs" + numServiceOneOutputs + " vs " + numServiceTwoInputs;
 									label.style.color = "red";
 									return;
 								}
-
-
-
 								break;
 							case 'control':
+								//Check if services exist in the current app for control relationship
+								if(!isDragSpotOccupied.includes(relationship.firstService) || !isDragSpotOccupied.includes(relationship.secondService)){
+									appDesignError = true;
+									errorText = "You must include all services required for a relationship: " + relationship.name;
+									return;
+								}
+								//get relationship element and the input fields related to it
+								let relationshipElement = document.getElementById("relationship" + relationshipIndex);
+								let conditional = document.getElementById("relationship" + relationshipIndex + "condition").value.trim();
+								let value = document.getElementById("relationship" + relationshipIndex + "value").value;
+
+								console.log("condition element is", conditional);
+								console.log("value element is", value);
+
+								//check if the conditional is correct
+								if(conditional !== ">" && conditional !== "<" && conditional !== "="){
+									appDesignError = true;
+									errorText= "Conditional for  " + relationship.name + " is incorrect";
+									return;
+								}
+								//fix value if it does not conform properly
+								if(value === null || value === undefined || isNaN(value)){
+									value = 0;
+								}
+
+								//TODO DO CHECK TO SEE NUMBER OF OUTPUTS OF SERVICE1 BEFORE ALLOWING SAVING
+								let numOutputs = 0;
+								services.forEach((service, index ) => {
+									if(relationship.firstService === service.name){
+										numOutputs = getNumOutputs(service);
+									}
+								});
+
+								if(numOutputs === 0){
+									appDesignError = true;
+									errorText= "Error  "+ relationship.firstService + " from control relationship " + relationship.name + " has no outputs";
+									return;
+								}
+
+								relationship.conditional = conditional;
+								relationship.controlParam = value;
+
+
 								break;
 							case 'support':
+								//do not do anything here for support. Support will simply reorder elements if service 2 is available
 								break;
 							default:
 								break;
 						}
 
 
+						tempApp.push({...relationship});
+						//tempApp[tempApp.length] = {... relationship};
+						console.log("Added element ", relationship);
+						//console.table(tempApp);
 
-						//statusLabel
-
-
-
-
-
-
-						tempApp.push(relationship);
 					}
 				})
 
-
-
-
-
-
 			}
 		});
+		console.log("temp app after parsing is: ");
+		console.table(tempApp);
 
 		let appName = document.getElementById("appName").value;
 		if(appDesignError){
 			label.innerText = errorText;
 			label.style.color = "red";
 			return;
+			//TODO UNCOMMENT THIS WHEN DOING FULL TESTING
 		}
 		else if(appName === null || appName === undefined || appName === ""){
 			label.innerText = "App Name cannot be empty";
@@ -324,9 +364,158 @@ const Recipe = (props) => {
 			return;
 		}
 
-		/*
-		TODO implement app reordering to put relevant services and relationships next to each other for simpler running
-		 */
+		let relationshipConflictError = false;
+		//CHECK TO SEE IF MULTIPLE RELATIONSHIPS WITH THE SAME SERVICES EXIST AND GIVE AN ERROR MESSAGE
+		tempApp.forEach((element, index) => {
+			if(element.type !== 'service'){ //if the element is a relationship ...
+
+				//check every index further down the array if it holds the same services
+				for(let k = index + 1; k < tempApp.length; k++){
+					if(tempApp[k].firstService !== undefined &&
+						element.firstService === tempApp[k].firstService &&
+						element.secondService === tempApp[k].secondService){
+						relationshipConflictError = true;
+					}
+
+					if(tempApp[k].firstService !== undefined &&
+						element.firstService === tempApp[k].secondService &&
+						element.secondService === tempApp[k].firstService){
+						relationshipConflictError = true;
+					}
+				}
+			}
+		});
+		//check for relationship conflicts
+		if(relationshipConflictError){
+			label.innerText = "Two relationships with the same services cannot be present in the app";
+			label.style.color = "red";
+			return;
+		}
+
+
+		//APP REORDERING BASED ON SERVICES
+		for(let i = 0; i <tempApp.length; i++){
+			//if the element is a relationship ...
+			if(tempApp[i].type !== 'service' && tempApp[i].type !== undefined) {
+
+
+				switch(tempApp[i].type){
+					case 'contest' :  // do no reordering for contest
+						continue;
+						break;
+					case 'drive' : //
+						//First: swap relationship to position of first service that appears
+						let firstElementIndex = 0;
+						for(let kk = 0; kk < tempApp.length; kk++){ //get index of first element held in this relationship
+							if(tempApp[kk].name === tempApp[i].name || tempApp[kk].name === tempApp[i].firstService || tempApp[kk].name === tempApp[i].secondService){
+								console.log("first element index is ", kk);
+								firstElementIndex = kk;
+								break;
+							}
+						}
+						//relationship will now be at the firstElementIndex
+						let temp = tempApp[firstElementIndex];
+						tempApp[firstElementIndex] = tempApp[i];
+						tempApp[i] = temp;
+
+						//find the index of the first service, swap it to be next to the relationship
+						for(let kk = 0; kk < tempApp.length; kk++){
+							if(tempApp[kk].name === tempApp[firstElementIndex].firstService){
+								let temp1 = tempApp[firstElementIndex + 1];
+								tempApp[firstElementIndex + 1] = tempApp[kk];
+								tempApp[kk] = temp1;
+								break;
+							}
+						}
+
+						//find the index of the second service, swap it to be next first service
+						for(let kk = 0; kk < tempApp.length; kk++){
+							if(tempApp[kk].name === tempApp[firstElementIndex].secondService){
+								let temp2 = tempApp[firstElementIndex + 2];
+								tempApp[firstElementIndex + 2] = tempApp[kk];
+								tempApp[kk] = temp2;
+								break;
+							}
+						}
+
+						break;
+					case 'support':
+						let firstServiceIndex = -1;
+						let secondServiceIndex = -1;
+
+						//get index of elements for swapping
+						for(let kk = 0; kk < tempApp.length; kk++){
+							if(tempApp[kk].name === tempApp[i].firstService){
+								firstServiceIndex = kk;
+								continue;
+							}
+							if(tempApp[kk].name === tempApp[i].secondService){
+								secondServiceIndex = kk;
+								continue;
+							}
+						}
+						//if both services are in the tempApp
+						if(firstServiceIndex !== -1 && secondServiceIndex !== -1){
+							//if service 1 is supposed to run first, swap its position with service 2
+							if(firstServiceIndex < secondServiceIndex){
+								let tempService = tempApp[firstServiceIndex];
+								tempApp[firstServiceIndex] = tempApp[secondServiceIndex];
+								tempApp[secondServiceIndex] = tempService;
+							}
+						}
+
+						break;
+					case 'control':
+
+					//Find the first element in the array, either the relationship, service 1, or service 2
+					let firstItemIndex = 0;
+					for(let kk = 0; kk < tempApp.length; kk++){ //get index of first element held in this relationship
+						if(tempApp[kk].name === tempApp[i].name || tempApp[kk].name === tempApp[i].firstService || tempApp[kk].name === tempApp[i].secondService){
+							console.log("first element index is ", kk);
+							firstItemIndex = kk;
+							break;
+						}
+					}
+
+					//relationship will now be at the firstElementIndex
+						let temp1 = tempApp[firstItemIndex];
+						tempApp[firstItemIndex] = tempApp[i];
+						tempApp[i] = temp1;
+
+						//find the index of the first service, swap it to be next to the relationship
+						for(let kk = 0; kk < tempApp.length; kk++){
+							if(tempApp[kk].name === tempApp[firstItemIndex].firstService){
+								let temp2 = tempApp[firstItemIndex + 1];
+								tempApp[firstItemIndex + 1] = tempApp[kk];
+								tempApp[kk] = temp2;
+								break;
+							}
+						}
+
+						//find the index of the second service, swap it to be next first service
+						for(let kk = 0; kk < tempApp.length; kk++){
+							if(tempApp[kk].name === tempApp[firstItemIndex].secondService){
+								let temp3 = tempApp[firstItemIndex + 2];
+								tempApp[firstItemIndex + 2] = tempApp[kk];
+								tempApp[kk] = temp3;
+								break;
+							}
+						}
+
+						break;
+					default :
+						break;
+				}
+
+
+
+			}
+
+		}
+
+		console.table(tempApp);
+
+
 		let finalApp = {
 			appElements : tempApp,
 			name : appName,
@@ -565,14 +754,40 @@ const Recipe = (props) => {
 		return inputUI;
 	};
 
+	const parseRelationship = (relationship, index) => {
+		//CHECK IF RELATIONSHIP IS A CONTROL RELATIONSHIP AND ADD THE NEEDED UI ELEMENTS
+		let conditionID = "relationship" + index + "condition";
+		let valueID = "relationship" + index + "value";
+
+		let UIelement = <div/>;
+		if(relationship.type === 'control'){
+			UIelement = (
+				<div>
+					<input
+						className="controlInput"
+						id={conditionID}
+						placeholder=" IF (>,<,=)"
+					/>
+					<input
+						className="controlInput"
+						id={valueID}
+						placeholder="value"
+					/>
+				</div>
+			);
+		}
+
+		return UIelement;
+	};
+
 	const getNumOutputs = (service) => {
 
 		let firstParenthesisIndex = service.APIstring.indexOf('(');
 		let lastParenthesisIndex = service.APIstring.indexOf(')');
-		console.log(service);
-		console.log("first bracket index", firstParenthesisIndex, lastParenthesisIndex);
+		//console.log(service);
+		//console.log("first bracket index", firstParenthesisIndex, lastParenthesisIndex);
 		let innerString = service.APIstring.substring(firstParenthesisIndex + 1, lastParenthesisIndex);
-		console.log(innerString);
+		//console.log(innerString);
 
 		let commaCount = 0; //count the number of commas in a service API string to determine the number of inputs
 		for (let position = 0; position < innerString.length; position++)
@@ -588,9 +803,6 @@ const Recipe = (props) => {
 		else if(commaCount > 2)
 			return 2;
 	};
-
-
-
 
 
 
@@ -612,17 +824,18 @@ const Recipe = (props) => {
 						nodeRef={nodeRef}
 						onStop={handleStopRelationships}
 						onStart={handleStartRelationships}
-						onDrag={handleDrag}
 					>
 						<div id={newID} className="drag-wrapperR" ref={nodeRef}>
-							<p id={newID}>{r.name}</p>
-							<div id={newID}>{r.type}</div>
-							<Row className ="inputDiv" id={index}>
-								<p id={newID}>{r.firstService}</p>
-								<div> - </div>
-								<p id={newID}>{r.secondService}</p>
+							<div id={newID}>{r.name}</div>
+							<Row className ="relationshipRow" id={newID}>
+								<div id={newID} className="relationshipChild" >{r.type}: </div>
+								<div id={newID} className="relationshipChild"> {r.firstService}</div>
+								<div className="relationshipChild"> - </div>
+								<div id={newID} className="relationshipChild">{r.secondService}</div>
 							</Row>
-
+							<Row className ="controlRow" id={newID}>
+								{parseRelationship(r, index)}
+							</Row>
 						</div>
 					</Draggable>
 				); //MUST SET ID AS INDEX ON ALL INNER ELEMENTS SO THAT NO MATTER WHERE IT IS DRAGGED FROM, IT WILL SHOW THE SAME ID
@@ -640,7 +853,6 @@ const Recipe = (props) => {
 					<Draggable
 					position={servicePositions[index]}
 					nodeRef={nodeRef}
-					onDrag={handleDrag}
 					onStart={handleStartServices}
 					onStop={handleStopServices}
 					>

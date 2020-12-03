@@ -77,6 +77,33 @@
   justify-content: center;
 }
 
+.relationshipRow {
+  display: flex;
+  justify-content: center;
+  font-size: x-small;
+  line-break: auto;
+  width: 150px;
+  align-content: center;
+  text-align: right;
+  margin-left: 0px;
+}
+
+.relationshipChild{
+  display:inline-block;
+}
+
+.controlRow{
+  display: flex;
+  justify-content: center;
+
+}
+
+.controlInput {
+  width: 75px;
+  height: 25px;
+  align-content: center;
+}
+
 .dragSpot {
   width: 150px;
   height: 75px;
