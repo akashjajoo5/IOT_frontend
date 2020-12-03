@@ -131,7 +131,7 @@ const AppManager = ({ addApp, removeApp }) => {
 	};
 
 	const renderedApps =
-		apps.length > 0 ? (
+		apps && apps.length > 0 ? (
 			apps.map((app, index) => {
 				return (
 					<div key={index} className="four wide column">
