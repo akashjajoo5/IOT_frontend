@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Helper from '../services/Helper';
 
 const Relationships = () => {
 	const [relationships, setRelationships] = useState([]);
 
 	const getRelationships = () => {
 		axios
-			.get('http://54.87.4.154:5000/getrelationships/')
+			.get(Helper.getURL() + '/getrelationships')
 			.then((res) => {
 				console.log(res.data);
 				setRelationships([...res.data]);
@@ -48,7 +49,9 @@ const Relationships = () => {
 
 	return (
 		<div>
-			<button onClick={getRelationships}>Get New Relationships</button>
+			<button className="ui button" onClick={getRelationships}>
+				Get New Relationships
+			</button>
 			<div className="ui relaxed divided list">{renderedRelationships}</div>
 		</div>
 	);

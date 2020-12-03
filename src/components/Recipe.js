@@ -1,10 +1,10 @@
-import React, {useEffect, useState} from 'react';
-import axios from "axios";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import Draggable from 'react-draggable';
-import {Col, Row} from "react-bootstrap";
+import { Col, Row } from 'react-bootstrap';
+import Helper from '../services/Helper';
 
-
-const Recipe = props => {
+const Recipe = (props) => {
 	const [services, setServices] = useState([]);
 	const [relationships, setRelationships] = useState([]);
 	const [servicePositions, setServicePositions] = useState([]);
@@ -20,8 +20,7 @@ const Recipe = props => {
 	const nodeRef = React.useRef(null);
 	const getServices = () => {
 		axios
-			.get('http://54.87.4.154:5000/getservices/')
-			//.get('http://localhost:5000/getservices/')
+			.get(Helper.getURL() + '/getservices')
 			.then((res) => {
 				//console.table(res.data);
 				setServices([...res.data]);
@@ -33,8 +32,7 @@ const Recipe = props => {
 
 	const getRelationships = () => {
 		axios
-			.get('http://54.87.4.154:5000/getrelationships/')
-			//.get('http://localhost:5000/getrelationships/')
+			.get(Helper.getURL() + '/getrelationships')
 			.then((res) => {
 				//console.log(res.data);
 				setRelationships([...res.data]);
@@ -56,8 +54,11 @@ const Recipe = props => {
 		setServicePositions([]);
 		setIsDragSpotOccupied([]);
 		//then set them all back to zero
-		for(let k = 0; k < services.length; k++){
-			setServicePositions(servicePositions => [...servicePositions, {"x": 0, "y": 0} ]);
+		for (let k = 0; k < services.length; k++) {
+			setServicePositions((servicePositions) => [
+				...servicePositions,
+				{ x: 0, y: 0 },
+			]);
 		}
 
 		//reassign all drag spots
@@ -68,9 +69,12 @@ const Recipe = props => {
 		//clear all positions when services change and
 		setRelationshipPositions([]);
 		//then set them all back to zero
-		console.log("relationship length is " + relationships.length);
-		for(let k = 0; k < relationships.length; k++){
-			setRelationshipPositions(relationshipPositions => [...relationshipPositions, {"x": 0, "y": 0} ]);
+		console.log('relationship length is ' + relationships.length);
+		for (let k = 0; k < relationships.length; k++) {
+			setRelationshipPositions((relationshipPositions) => [
+				...relationshipPositions,
+				{ x: 0, y: 0 },
+			]);
 		}
 		//reassign all drag spots
 	}, [relationships]);
@@ -87,14 +91,12 @@ const Recipe = props => {
 		//console.table(isDragSpotOccupied);
 		realignFilledSpots();
 
-		if(renderedDragSpots.length === 0){
+		if (renderedDragSpots.length === 0) {
 			addSpot();
 		}
 	}, [renderedDragSpots]);
 
-	const handleDrag = (e,d) => {
-
-	};
+	const handleDrag = (e, d) => {};
 	//this function will realign the service with the drag spots
 
 	const realignFilledSpots = () => {
@@ -117,17 +119,20 @@ const Recipe = props => {
 
 				//Add service realign
 
-				relationships.forEach((relationship, relationshipIndex)=> {
-					if(relationship.name === value){
-						let dragSpotPosition = getAbsolutePosition(document.getElementById("dragSpot" + index));
-						let relationshipPosition = getAbsolutePosition(document.getElementById('relationship' + relationshipIndex));
+				relationships.forEach((relationship, relationshipIndex) => {
+					if (relationship.name === value) {
+						let dragSpotPosition = getAbsolutePosition(
+							document.getElementById('dragSpot' + index)
+						);
+						let relationshipPosition = getAbsolutePosition(
+							document.getElementById('relationship' + relationshipIndex)
+						);
 						tempRelationshipPositions[relationshipIndex] = {
-							"x": Math.trunc(dragSpotPosition.x - relationshipPosition.x),
-							"y": Math.trunc(dragSpotPosition.y - relationshipPosition.y)
+							x: Math.trunc(dragSpotPosition.x - relationshipPosition.x),
+							y: Math.trunc(dragSpotPosition.y - relationshipPosition.y),
 						};
 					}
-				})
-
+				});
 			}
 		});
 
@@ -322,14 +327,12 @@ const Recipe = props => {
 		/*
 		TODO implement app reordering to put relevant services and relationships next to each other for simpler running
 		 */
-		let completedApp = {};
-
-		completedApp.elements = tempApp;
-		completedApp.appName = appName;
-
-
-		props.addApp(completedApp);
-		console.table(completedApp.elements);
+		tempApp.name = appName;
+		tempApp.status = 'Inactive';
+		tempApp.dateCreated = Date.now();
+		tempApp.startTime = '';
+		props.addApp(tempApp);
+		console.table(tempApp);
 		clearEditor();
 	};
 /*
