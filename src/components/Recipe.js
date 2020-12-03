@@ -327,12 +327,17 @@ const Recipe = (props) => {
 		/*
 		TODO implement app reordering to put relevant services and relationships next to each other for simpler running
 		 */
-		tempApp.name = appName;
-		tempApp.status = 'Inactive';
-		tempApp.dateCreated = Date.now();
-		tempApp.startTime = '';
-		props.addApp(tempApp);
-		console.table(tempApp);
+		let finalApp = {
+			appElements : tempApp,
+			name : appName,
+			status : 'Inactive',
+			dateCreated : Date.now(),
+			startTime  : ''
+		};
+
+		//console.log(finalApp);
+		props.addApp(finalApp);
+		//console.table(tempApp);
 		clearEditor();
 	};
 /*
