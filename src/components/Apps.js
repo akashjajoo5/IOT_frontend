@@ -1,42 +1,87 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-const Apps = (props) => {
-	console.log(props);
+const Apps = ({ addApp, permApps, removePermApp }) => {
+	const [apps, setApps] = useState([]);
+
+	const getApps = () => {
+		setApps(JSON.parse(localStorage.getItem('permrecipes')));
+		console.log(apps);
+	};
+
+	useEffect(() => {
+		getApps();
+	}, []);
+
 	const generateServicesUI = (app) => {
 		let services = [];
-		app.forEach((service, index) => {
-			services.push(<div className="header">{service.name}</div>);
+		app.forEach((service) => {
+			services.push(
+				<div className="event">
+					<div className="content">
+						<div className="summary">{service.name}</div>
+					</div>
+				</div>
+			);
 		});
 
 		return services;
 	};
 
-	var myWidget = window.cloudinary.createUploadWidget(
-		{
-			cloudName: 'dsgvwdu7t',
-			uploadPreset: 'x0udwssk',
-		},
-		(error, result) => {
-			if (!error && result && result.event === 'success') {
-				console.log('Done! Here is the image info: ', result.info);
-			}
-		}
-	);
-
-	document.getElementById('upload_widget').addEventListener(
-		'click',
-		function () {
-			myWidget.open();
-		},
-		false
-	);
-
 	const renderedApps =
-		props.apps.length > 0 ? (
-			props.apps.map((app, index) => {
+		apps && apps.length > 0 ? (
+			apps.map((app, index) => {
 				return (
-					<div key={index} className="item">
-						<div>{generateServicesUI(app)}</div>
+					<div key={index} className="four wide column">
+						<div key={index} className="ui card">
+							<div className="content">
+								<div className="header">{app.name}</div>
+							</div>
+							<div className="content">
+								<h4 className="ui header">Services</h4>
+								<div className="ui small feed">
+									{generateServicesUI(app.appElements)}
+								</div>
+								<div>
+									<button
+										onClick={() => {
+											addApp(app);
+										}}
+										className="circular ui icon button"
+										data-tooltip="Load"
+									>
+										<i className="upload icon"></i>
+									</button>
+									<button
+										className="circular ui icon button"
+										onClick={() => {
+											removePermApp(app);
+											getApps();
+										}}
+										data-tooltip="Delete"
+									>
+										<i className="delete icon"></i>
+									</button>
+								</div>
+							</div>
+							<div style={{ fontSize: '16px' }}>
+								Date created:
+								{new Date(app.dateCreated).toLocaleDateString('en-US', {
+									hour: 'numeric',
+									minute: 'numeric',
+								})}
+							</div>
+							{app.startTime !== '' && app.status === 'Active' ? (
+								<div style={{ fontSize: '16px' }}>
+									Start Time: {console.log(typeof app.startTime)}
+									{new Date(app.startTime).toLocaleDateString('en-US', {
+										hour: 'numeric',
+										minute: 'numeric',
+									})}
+								</div>
+							) : (
+								''
+							)}
+						</div>
 					</div>
 				);
 			})
@@ -46,10 +91,9 @@ const Apps = (props) => {
 
 	return (
 		<div>
-			<div className="ui relaxed divided list">{renderedApps}</div>
-			<button id="upload_widget" className="cloudinary-button">
-				Upload
-			</button>
+			<div className="ui grid" style={{ paddingLeft: '2%' }}>
+				{renderedApps}
+			</div>
 		</div>
 	);
 };

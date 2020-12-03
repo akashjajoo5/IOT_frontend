@@ -5,7 +5,7 @@ const ModalPopUp = ({ s, handleClose, logOutput }) => {
 	const renderLines =
 		logOutput.length > 0
 			? logOutput.map((c) => {
-					return <div>{c}</div>;
+					return <div key={c}>{c}</div>;
 			  })
 			: '';
 	return (
