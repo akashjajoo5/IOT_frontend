@@ -1,19 +1,46 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ModalPopUp from './ModalPopUp';
 import Helper from '../services/Helper';
 
-const AppManager = ({ apps, addApp, removeApp }) => {
-	console.log(apps);
-
+const AppManager = ({ addApp, removeApp }) => {
+	const [apps, setApps] = useState([]);
 	const [runningServices, setRunningServices] = useState([]);
 	const [show, setShow] = useState(false);
 	const [logOutput, setLogOutput] = useState([]);
 	const handleClose = () => setShow(false);
 
+	const checkIfExpired = () => {
+		apps.forEach((elem) => {
+			if (elem.startTime === '') {
+				if (Number(elem.dateCreated) < Date.now() - 300000) {
+					removeApp(elem);
+				}
+			} else {
+				if (Number(elem.startTime) < Date.now() - 300000) {
+					removeApp(elem);
+				}
+			}
+		});
+	};
+
+	const getApps = () => {
+		setApps(JSON.parse(localStorage.getItem('recipes')));
+		console.log(apps);
+	};
+
+	useEffect(() => {
+		const handle = setInterval(() => checkIfExpired(), 10000);
+		return () => clearInterval(handle);
+	}, []);
+
+	useEffect(() => {
+		getApps();
+	}, []);
+
 	const generateServicesUI = (app) => {
 		let services = [];
-		app.forEach((service, index) => {
+		app.forEach((service) => {
 			services.push(
 				<div className="event">
 					<div className="content">
@@ -29,7 +56,7 @@ const AppManager = ({ apps, addApp, removeApp }) => {
 	const startServices = async (id) => {
 		//console.log(apps[id]);
 		let newStr = [];
-		if (apps[id].length > 0) {
+		if (apps[id].appElements.length > 0) {
 			let temp = runningServices;
 			temp = temp.concat(id);
 			setRunningServices(temp);
@@ -37,14 +64,14 @@ const AppManager = ({ apps, addApp, removeApp }) => {
 			apps[id].startTime = Date.now();
 			newStr.push('Executing Services...');
 			setLogOutput(newStr);
-			for (let i = 0; i < apps[id].length; i++) {
+			for (let i = 0; i < apps[id].appElements.length; i++) {
 				//console.log('here');
 				//console.log(apps[id][i]);
 				newStr.push('Executing Service ' + i);
 				setLogOutput(newStr);
 				const res = await axios
 					.post(Helper.getURL() + '/runservice', {
-						tweet: apps[id][i],
+						tweet: apps[id]['appElements'][i],
 					})
 					.then((res) => {
 						let output = JSON.parse(res.data);
@@ -88,7 +115,7 @@ const AppManager = ({ apps, addApp, removeApp }) => {
 			setTimeout(function () {
 				setLogOutput([]);
 				handleClose();
-			}, 3000);
+			}, 7000);
 			temp = runningServices.filter((item) => item !== id);
 			setRunningServices(temp);
 		}
@@ -104,17 +131,19 @@ const AppManager = ({ apps, addApp, removeApp }) => {
 	};
 
 	const renderedApps =
-		apps.length > 0 ? (
+		apps && apps.length > 0 ? (
 			apps.map((app, index) => {
 				return (
-					<div className="four wide column">
+					<div key={index} className="four wide column">
 						<div key={index} className="ui card">
 							<div className="content">
 								<div className="header">{app.name}</div>
 							</div>
 							<div className="content">
 								<h4 className="ui header">Services</h4>
-								<div className="ui small feed">{generateServicesUI(app)}</div>
+								<div className="ui small feed">
+									{generateServicesUI(app.appElements)}
+								</div>
 								<div>
 									{app.status === 'Inactive' ||
 									app.status === 'Completed' ||
@@ -213,7 +242,9 @@ const AppManager = ({ apps, addApp, removeApp }) => {
 				/>
 			</div>
 			<ModalPopUp s={show} handleClose={handleClose} logOutput={logOutput} />
-			<div className="ui grid">{renderedApps}</div>
+			<div className="ui grid" style={{ paddingLeft: '2%' }}>
+				{renderedApps}
+			</div>
 		</div>
 	);
 };

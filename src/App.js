@@ -13,14 +13,36 @@ import './App.css';
 
 function App() {
 	const [apps, setApps] = useState([]);
+	const [permApps, setPermApps] = useState([]);
 
 	const addApp = (newApp) => {
-		setApps((apps) => [...apps, newApp]);
+		newApp.dateCreated = Date.now();
+		let temp = [...apps, newApp];
+		setApps(temp);
+		//console.log(temp);
+		//console.log(JSON.stringify(temp));
+		localStorage.setItem('recipes', JSON.stringify(temp));
+	};
+
+	const addPermApp = (newApp) => {
+		let temp = [...permApps, newApp];
+		setPermApps(temp);
+		//console.log(temp);
+		//console.log(JSON.stringify(temp));
+		localStorage.setItem('permrecipes', JSON.stringify(temp));
 	};
 
 	const removeApp = (ap) => {
-		let temp = apps.filter((item) => item !== ap);
+		let temp = apps.filter((item) => item.name !== ap.name);
 		setApps(temp);
+		localStorage.setItem('recipes', JSON.stringify(temp));
+	};
+
+	const removePermApp = (ap) => {
+		let temp = permApps.filter((item) => item.name !== ap.name);
+		localStorage.setItem('permrecipes', JSON.stringify(temp));
+		setPermApps(temp);
+		console.log(temp);
 	};
 
 	return (
@@ -62,9 +84,19 @@ function App() {
 					<Route
 						exact
 						path="/recipe"
-						component={() => <Recipe apps={apps} addApp={addApp} />}
+						component={() => <Recipe apps={permApps} addApp={addPermApp} />}
 					/>
-					<Route exact path="/apps" component={() => <Apps apps={apps} />} />
+					<Route
+						exact
+						path="/apps"
+						component={() => (
+							<Apps
+								addApp={addApp}
+								permApps={permApps}
+								removePermApp={removePermApp}
+							/>
+						)}
+					/>
 					<Route
 						exact
 						path="/appmanager"
