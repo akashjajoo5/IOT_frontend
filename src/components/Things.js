@@ -17,12 +17,13 @@ const Things = () => {
 			});
 	};
 
-	const setImage = async (imageUrl, name) => {
+	const setImage = async (imageUrl, name, thingID) => {
 		await axios
 			.post(Helper.getURL() + '/setimageurl', {
 				imageUrl: imageUrl,
 				type: 'Things',
 				name: name,
+				thingID: thingID,
 			})
 			.then((res) => {
 				console.log(res);
@@ -41,7 +42,7 @@ const Things = () => {
 		things.length > 0 ? (
 			things.map((c) => {
 				return (
-					<div key={c.name} className="card">
+					<div key={c.thingID} className="card">
 						<div className="content">
 							{c.imageUrl !== '' ? (
 								<img src={c.imageUrl} width="75%" height="150" alt="service" />
@@ -78,7 +79,7 @@ const Things = () => {
 														'Done! Here is the image info: ',
 														result.info
 													);
-													setImage(result.info.url, c.name);
+													setImage(result.info.url, c.name, c.thingID);
 												}
 											}
 										)

@@ -34,8 +34,8 @@ function App() {
 
 	const removeApp = (ap) => {
 		let temp = apps.filter((item) => item.name !== ap.name);
-		setApps(temp);
 		localStorage.setItem('recipes', JSON.stringify(temp));
+		setApps(temp);
 	};
 
 	const removePermApp = (ap) => {
